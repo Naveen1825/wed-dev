@@ -1,0 +1,18 @@
+[
+  { "id": 1, "name": "Golden Retriever", "image": "https://picsum.photos/seed/golden/100/100.jpg" },
+  { "id": 2, "name": "Labrador Retriever", "image": "https://picsum.photos/seed/labrador/100/100.jpg" },
+  { "id": 3, "name": "German Shepherd", "image": "https://picsum.photos/seed/shepherd/100/100.jpg" },
+  { "id": 4, "name": "Bulldog", "image": "https://picsum.photos/seed/bulldog/100/100.jpg" },
+  { "id": 5, "name": "Poodle", "image": "https://picsum.photos/seed/poodle/100/100.jpg" },
+  { "id": 6, "name": "Persian Cat", "image": "https://picsum.photos/seed/persian/100/100.jpg" },
+  { "id": 7, "name": "Maine Coon", "image": "https://picsum.photos/seed/mainecoon/100/100.jpg" },
+  { "id": 8, "name": "Siamese", "image": "https://picsum.photos/seed/siamese/100/100.jpg" },
+  { "id": 9, "name": "Bengal Cat", "image": "https://picsum.photos/seed/bengal/100/100.jpg" },
+  { "id": 10, "name": "Parrot", "image": "https://picsum.photos/seed/parrot/100/100.jpg" },
+  { "id": 11, "name": "Budgerigar", "image": "https://picsum.photos/seed/budgie/100/100.jpg" },
+  { "id": 12, "name": "Cockatiel", "image": "https://picsum.photos/seed/cockatiel/100/100.jpg" },
+  { "id": 13, "name": "Goldfish", "image": "https://picsum.photos/seed/goldfish/100/100.jpg" },
+  { "id": 14, "name": "Betta Fish", "image": "https://picsum.photos/seed/betta/100/100.jpg" },
+  { "id": 15, "name": "Holland Lop", "image": "https://picsum.photos/seed/hollandlop/100/100.jpg" },
+  { "id": 16, "name": "Netherland Dwarf", "image": "https://picsum.photos/seed/dwarf/100/100.jpg" }
+]
