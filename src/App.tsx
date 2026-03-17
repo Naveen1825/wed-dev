@@ -1,84 +1,84 @@
-import './App.css'
-import { useState, useEffect } from 'react'
+import "./App.css";
+import { useState, useEffect, useRef } from "react";
 
 interface Breed {
-  id: number
-  name: string
-  image: string
+  id: number;
+  name: string;
+  image: string;
 }
 
 function App() {
-  const [breeds, setBreeds] = useState<Breed[]>([])
+  const [breeds, setBreeds] = useState<Breed[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/breed.json')
-      .then(response => response.json())
-      .then(data => setBreeds(data))
-      .catch(error => console.error('Error loading breed data:', error))
-  }, [])
+    fetch("/breed.json")
+      .then((res) => res.json())
+      .then((data) => setBreeds(data))
+      .catch((err) => console.error("Breed loading error:", err));
+  }, []);
 
-  const scrollLeft = () => {
-    const container = document.getElementById('breed-scroll')
-    if (container) {
-      container.scrollBy({ left: -200, behavior: 'smooth' })
-    }
-  }
+  const scroll = (direction: "left" | "right") => {
+    if (!scrollRef.current) return;
 
-  const scrollRight = () => {
-    const container = document.getElementById('breed-scroll')
-    if (container) {
-      container.scrollBy({ left: 200, behavior: 'smooth' })
-    }
-  }
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -250 : 250,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <>
-      {/* Navigation Section */}
-      <section className="Navigation">
-        <div className="nav-container">
-          <img src="https://anisell.in/wp-content/uploads/2025/06/91-93450-29589-1.png" alt="Logo" className="logo"/>
-          <div className="search-container">
-            <input type="text" placeholder="Search" />
-            <button type="button" className="search-button">search</button>
-          </div>
-          <div className="user-container">
-            {/* <img src="/user-profile.png" alt="User" className="user-image"/> */}
-            <button>Sign in / Up</button>
-          </div>
-        </div>
-      </section>
+      {/* NAVIGATION */}
+      <nav className="nav">
+        <img
+          src="https://anisell.in/wp-content/uploads/2025/06/91-93450-29589-1.png"
+          alt="logo"
+          className="logo"
+        />
 
-      {/* Breed Browser Section */}
-      <section className="breed-browser">
-        <div className="breed-browser-container">
-          <button className="scroll-arrow scroll-left" onClick={scrollLeft}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
-          
-          <div className="breed-scroll-container">
-            <div id="breed-scroll" className="breed-scroll">
-              {breeds.map((breed) => (
-                <div key={breed.id} className="breed-card">
-                  <div className='img-container'>
-                    <img src={breed.image} alt={breed.name} className="breed-image" />
-                  </div>
-                  <h3 className="breed-name">{breed.name}</h3>
+        <div className="search">
+          <input type="text" placeholder="Search" />
+          <button>Search</button>
+        </div>
+        {/* <img src="/user-profile.png" alt="User" className="user-image"/> */}
+        <button className="login-btn">Sign in / Up</button>
+      </nav>
+
+      {/* BREED BROWSER */}
+      <section className="breed-section">
+
+        <button className="arrow left" onClick={() => scroll("left")}>
+          <svg viewBox="0 0 24 24">
+            <path d="M15 18L9 12L15 6"/>
+          </svg>
+        </button>
+
+        <div className="breed-scroll-wrapper">
+
+          <div className="breed-scroll" ref={scrollRef}>
+            {breeds.map((breed) => (
+              <div key={breed.id} className="breed-card">
+                <div className="img-box">
+                  <img src={breed.image} alt={breed.name} />
                 </div>
-              ))}
-            </div>
+
+                <p className="breed-name">{breed.name}</p>
+              </div>
+            ))}
           </div>
 
-          <button className="scroll-arrow scroll-right" onClick={scrollRight}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </button>
         </div>
+
+        <button className="arrow right" onClick={() => scroll("right")}>
+          <svg viewBox="0 0 24 24">
+            <path d="M9 18L15 12L9 6"/>
+          </svg>
+        </button>
+
       </section>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
