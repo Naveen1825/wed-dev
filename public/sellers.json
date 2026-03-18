@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "name": "Paws & Tails",
+    "avatar": "🐶",
+    "location": "New Delhi",
+    "rating": 4.9,
+    "pets": 34
+  },
+  {
+    "id": 2,
+    "name": "Feline Grace",
+    "avatar": "🐱",
+    "location": "Mumbai",
+    "rating": 4.8,
+    "pets": 12
+  },
+  {
+    "id": 3,
+    "name": "Azure Aquatics",
+    "avatar": "🐟",
+    "location": "Kochi",
+    "rating": 4.7,
+    "pets": 80
+  },
+  {
+    "id": 4,
+    "name": "Feathered Friends",
+    "avatar": "🐦",
+    "location": "Bangalore",
+    "rating": 5.0,
+    "pets": 45
+  }
+]
