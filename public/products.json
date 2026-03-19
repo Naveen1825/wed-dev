@@ -1,0 +1,417 @@
+{
+  "users": [
+    {
+      "UserId": "user_001",
+      "sellerProfile": "https://randomuser.me/api/portraits/men/32.jpg",
+      "UserName": "Arjun Kumar",
+      "UserEmail": "arjun@example.com",
+      "UserNumber": "+91 9988776655"
+    },
+    {
+      "UserId": "user_002",
+      "sellerProfile": "https://randomuser.me/api/portraits/women/44.jpg",
+      "UserName": "Priya Sharma",
+      "UserEmail": "priya@example.com",
+      "UserNumber": "+91 8877665544"
+    },
+    {
+      "UserId": "user_003",
+      "sellerProfile": "https://randomuser.me/api/portraits/men/67.jpg",
+      "UserName": "Rahul Verma",
+      "UserEmail": "rahul@example.com",
+      "UserNumber": "+91 7766554433"
+    },
+    {
+      "UserId": "user_004",
+      "sellerProfile": "https://randomuser.me/api/portraits/women/12.jpg",
+      "UserName": "Emma Watson",
+      "UserEmail": "emma@example.com",
+      "UserNumber": "+91 6655443322"
+    },
+    {
+      "UserId": "user_005",
+      "sellerProfile": "https://randomuser.me/api/portraits/men/5.jpg",
+      "UserName": "Sarah Miller",
+      "UserEmail": "sarah@example.com",
+      "UserNumber": "+91 5544332211"
+    }
+  ],
+  "sellers": [
+    {
+      "sellerId": "sel_001",
+      "sellerProfile": "https://randomuser.me/api/portraits/men/1.jpg",
+      "sellerName": "Paws & Whiskers",
+      "sellerEmail": "contact@paws.com",
+      "sellerNumber": "+91 9988776655",
+      "sellerCertificate": "ANIS-001",
+      "sellerLocation": "Mumbai, MH",
+      "productIds": ["prod_001", "prod_002", "prod_003", "prod_004"]
+    },
+    {
+      "sellerId": "sel_002",
+      "sellerProfile": "https://randomuser.me/api/portraits/women/2.jpg",
+      "sellerName": "Exotic Aquatics",
+      "sellerEmail": "info@aquatics.in",
+      "sellerNumber": "+91 8877665544",
+      "sellerCertificate": "ANIS-002",
+      "sellerLocation": "Delhi, DL",
+      "productIds": ["prod_005", "prod_006", "prod_007", "prod_008"]
+    },
+    {
+      "sellerId": "sel_003",
+      "sellerProfile": "https://randomuser.me/api/portraits/men/3.jpg",
+      "sellerName": "Bird Haven",
+      "sellerEmail": "hello@birdhaven.com",
+      "sellerNumber": "+91 7766554433",
+      "sellerCertificate": "ANIS-003",
+      "sellerLocation": "Bangalore, KA",
+      "productIds": ["prod_009", "prod_010", "prod_011", "prod_012"]
+    },
+    {
+      "sellerId": "sel_004",
+      "sellerProfile": "https://randomuser.me/api/portraits/women/4.jpg",
+      "sellerName": "Happy Tails",
+      "sellerEmail": "support@happytails.in",
+      "sellerNumber": "+91 6655443322",
+      "sellerCertificate": "ANIS-004",
+      "sellerLocation": "Chennai, TN",
+      "productIds": ["prod_013", "prod_014", "prod_015"]
+    }
+  ],
+  "products": [
+    {
+      "productId": "prod_001",
+      "productCategory": "Pets",
+      "productType": "Dogs",
+      "productSubCategory": "Golden Retriever",
+      "productDescription": "Healthy 3-month-old Golden Retriever puppy. Active and playful.Healthy 3-month-old Golden Retriever puppy. Active and playful.Healthy 3-month-old Golden Retriever puppy. Active and playful.Healthy 3-month-old Golden Retriever puppy. Active and playful.",
+      "productAge": "12 weeks",
+      "productGender": "Male",
+      "productPrice": 25000,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1591768793355-74d7c869188d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1560743641-3914f2c45636?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1554692941-86ccf26b527b?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": true,
+      "productIsPair": false,
+      "productReviews": [
+        {
+          "userId": "user_001",
+          "comment": "The puppy is so healthy and well-behaved. The seller was very responsive and helpful throughout the process.",
+          "datetime": "2026-03-15 14:30",
+          "rating": 5
+        },
+        {
+          "userId": "user_005",
+          "comment": "Exactly as described. A beautiful golden retriever puppy. Very happy with my purchase!",
+          "datetime": "2026-03-10 09:15",
+          "rating": 5
+        }
+      ]
+    },
+    {
+      "productId": "prod_002",
+      "productCategory": "Pets",
+      "productType": "Cats",
+      "productSubCategory": "Persian Cat",
+      "productDescription": "Pure white Persian cat with beautiful eyes. Very calm.",
+      "productAge": "6 months",
+      "productGender": "Female",
+      "productPrice": 18000,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1566847438217-76e82d383f84?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1491485880348-85d48a9e5312?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": true,
+      "productIsPair": false,
+      "productReviews": [
+        {
+          "userId": "user_002",
+          "comment": "She is such a lovely cat. Very calm as mentioned. Thank you!",
+          "datetime": "2026-03-12 18:20",
+          "rating": 4
+        }
+      ]
+    },
+    {
+      "productId": "prod_003",
+      "productCategory": "Pets",
+      "productType": "Small Pets",
+      "productSubCategory": "Guinea Pig",
+      "productDescription": "Cute pair of guinea pigs. Perfect for beginners.",
+      "productAge": "8 weeks",
+      "productGender": "Pair",
+      "productPrice": 6000,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1544378730-8b5104b18790?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1533743958160-ca47d3e058bb?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": false,
+      "productIsPair": true,
+      "productReviews": []
+    },
+    {
+      "productId": "prod_004",
+      "productCategory": "Pets",
+      "productType": "Dogs",
+      "productSubCategory": "German Shepherd",
+      "productDescription": "Loyal and brave German Shepherd. Family raised.",
+      "productAge": "4 months",
+      "productGender": "Male",
+      "productPrice": 32000,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1529429617329-c4b1e9e8073b?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1524233769150-13f5697669d5?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": true,
+      "productIsPair": false,
+      "productReviews": [
+        {
+          "userId": "user_003",
+          "comment": "Extremely protective and intelligent puppy. Training is going great!",
+          "datetime": "2026-02-28 11:10",
+          "rating": 5
+        }
+      ]
+    },
+    {
+      "productId": "prod_005",
+      "productCategory": "Pets",
+      "productType": "Fish",
+      "productSubCategory": "Betta Fish",
+      "productDescription": "Vibrant blue Betta fish. Easy to keep.",
+      "productAge": "Adult",
+      "productGender": "Male",
+      "productPrice": 1500,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1524704659698-9ff3111f1859?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1511216335778-7cb8f49fa7a3?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1509205477838-a534e43a849f?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": false,
+      "productIsPair": false,
+      "productReviews": []
+    },
+    {
+      "productId": "prod_006",
+      "productCategory": "Pets",
+      "productType": "Birds",
+      "productSubCategory": "Cockatiel",
+      "productDescription": "Friendly Cockatiel, hand-raised and talking.",
+      "productAge": "1 year",
+      "productGender": "Female",
+      "productPrice": 9000,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1552728089-57bdde30fc3b?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1554692941-86ccf26b527b?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1560743641-3914f2c45636?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": false,
+      "productIsPair": false,
+      "productReviews": [
+        {
+          "userId": "user_004",
+          "comment": "She is so loud and cheerful! I love her energy. The seller provided all the necessary care tips.",
+          "datetime": "2026-03-01 16:45",
+          "rating": 5
+        }
+      ]
+    },
+    {
+      "productId": "prod_007",
+      "productCategory": "Pets",
+      "productType": "Small Pets",
+      "productSubCategory": "Rabbit",
+      "productDescription": "Holland Lop rabbit. Soft and cuddly.",
+      "productAge": "3 months",
+      "productGender": "Female",
+      "productPrice": 4500,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1533743958160-ca47d3e058bb?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1511216335778-7cb8f49fa7a3?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": true,
+      "productIsPair": false,
+      "productReviews": []
+    },
+    {
+      "productId": "prod_008",
+      "productCategory": "Pets",
+      "productType": "Dogs",
+      "productSubCategory": "Siberian Husky",
+      "productDescription": "Beautiful Husky puppy with blue eyes.",
+      "productAge": "10 weeks",
+      "productGender": "Male",
+      "productPrice": 40000,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1591768793355-74d7c869188d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1560743641-3914f2c45636?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1554692941-86ccf26b527b?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": true,
+      "productIsPair": false,
+      "productReviews": []
+    },
+    {
+      "productId": "prod_009",
+      "productCategory": "Pets",
+      "productType": "Dogs",
+      "productSubCategory": "Pug",
+      "productDescription": "Adorable flat-faced Pug puppy.",
+      "productAge": "8 weeks",
+      "productGender": "Female",
+      "productPrice": 22000,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1517423440428-a5a00ad1e3e8?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": true,
+      "productIsPair": false,
+      "productReviews": []
+    },
+    {
+      "productId": "prod_010",
+      "productCategory": "Pets",
+      "productType": "Cats",
+      "productSubCategory": "Maine Coon",
+      "productDescription": "Largest domestic cat breed. Gentle giant.",
+      "productAge": "4 months",
+      "productGender": "Male",
+      "productPrice": 30000,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1566847438217-76e82d383f84?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1511216335778-7cb8f49fa7a3?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": true,
+      "productIsPair": false,
+      "productReviews": []
+    },
+    {
+      "productId": "prod_011",
+      "productCategory": "Pets",
+      "productType": "Small Pets",
+      "productSubCategory": "Hamster",
+      "productDescription": "Syrian hamster. Active at night.",
+      "productAge": "12 weeks",
+      "productGender": "Male",
+      "productPrice": 2500,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1544378730-8b5104b18790?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1591768793355-74d7c869188d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": false,
+      "productIsPair": false,
+      "productReviews": []
+    },
+    {
+      "productId": "prod_012",
+      "productCategory": "Pets",
+      "productType": "Birds",
+      "productSubCategory": "Lovebirds",
+      "productDescription": "Colorful pair of lovebirds. Always together.",
+      "productAge": "6 months",
+      "productGender": "Pair",
+      "productPrice": 7500,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1522850959074-b333a577f884?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1552728089-57bdde30fc3b?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1554692941-86ccf26b527b?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": false,
+      "productIsPair": true,
+      "productReviews": []
+    },
+    {
+      "productId": "prod_013",
+      "productCategory": "Pets",
+      "productType": "Dogs",
+      "productSubCategory": "Beagle",
+      "productDescription": "Great hunting dog and companion.",
+      "productAge": "5 months",
+      "productGender": "Male",
+      "productPrice": 20000,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1505628346881-b72b27e84534?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1591768793355-74d7c869188d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1560743641-3914f2c45636?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": true,
+      "productIsPair": false,
+      "productReviews": []
+    },
+    {
+      "productId": "prod_014",
+      "productCategory": "Toys & Accessories",
+      "productType": "Dogs",
+      "productSubCategory": "Dog Chew Toy",
+      "productDescription": "Durable rubber chew toy.",
+      "productAge": "New",
+      "productGender": "Universal",
+      "productPrice": 1200,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1591768793355-74d7c869188d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1560743641-3914f2c45636?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": false,
+      "productIsPair": false,
+      "productReviews": []
+    },
+    {
+      "productId": "prod_015",
+      "productCategory": "Toys & Accessories",
+      "productType": "Cats",
+      "productSubCategory": "Cat Tree",
+      "productDescription": "Multi-level cat scratching post.",
+      "productAge": "New",
+      "productGender": "Universal",
+      "productPrice": 8500,
+      "productMedia": [
+        "https://images.unsplash.com/photo-1545249390-6bdfa2833075?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1591768793355-74d7c869188d?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://images.unsplash.com/photo-1560743641-3914f2c45636?auto=format&fit=crop&q=80&w=400&h=400",
+        "https://www.w3schools.com/html/mov_bbb.mp4"
+      ],
+      "productVaccinated": false,
+      "productIsPair": false,
+      "productReviews": []
+    }
+  ]
+}

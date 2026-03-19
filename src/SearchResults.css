@@ -1,0 +1,240 @@
+:root {
+  --anisell-blue: #007bff;
+  --anisell-blue-dark: #0056b3;
+  --anisell-text-primary: #1e293b;
+  --anisell-text-secondary: #64748b;
+  --anisell-bg-light: #f8fafc;
+  --anisell-border: #e2e8f0;
+}
+
+.search-page-wrapper {
+  background-color: var(--anisell-bg-light);
+  min-height: 100vh;
+}
+
+.search-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  padding: 20px;
+  gap: 30px;
+}
+
+/* Sidebar Styling Refined */
+.filter-sidebar {
+  width: 280px;
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  height: fit-content;
+  align-self: flex-start;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--anisell-border);
+}
+
+.sidebar-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--anisell-border);
+}
+
+.sidebar-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--anisell-text-primary);
+}
+
+.sidebar-results-count {
+  font-size: 11px;
+  background: #eff6ff;
+  color: #3b82f6;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-group {
+  margin-bottom: 24px;
+}
+
+.filter-group h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--anisell-text-primary);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--anisell-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+}
+
+/* CRITICAL: Hiding the browser's native checkbox/radio */
+.filter-option input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.filter-option:hover {
+  color: var(--anisell-blue);
+}
+
+/* Sidebar Sort Select */
+.sidebar-sort-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--anisell-border);
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1e293b;
+  outline: none;
+}
+
+/* Price Range Inputs */
+.price-inputs {
+  display: flex;
+  gap: 12px;
+}
+
+.price-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.price-input-wrapper span {
+  position: absolute;
+  left: 10px;
+  font-size: 14px;
+  color: var(--anisell-text-secondary);
+  font-weight: 600;
+}
+
+.price-input {
+  width: 100%;
+  padding: 10px 10px 10px 24px;
+  border: 1px solid var(--anisell-border);
+  border-radius: 10px;
+  font-size: 13px;
+  outline: none;
+  background-color: #f8fafc;
+}
+
+/* Custom Styled Checkbox & Radio */
+.radio-custom, .checkbox-custom {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  display: inline-block;
+  background-color: white;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.radio-custom {
+  border-radius: 50%;
+}
+
+.filter-option input:checked ~ .radio-custom,
+.filter-option input:checked ~ .checkbox-custom {
+  background-color: var(--anisell-blue);
+  border-color: var(--anisell-blue);
+}
+
+.filter-option input:checked ~ .radio-custom::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+}
+
+.filter-option input:checked ~ .checkbox-custom::after {
+  content: "✓";
+  color: white;
+  font-size: 12px;
+  font-weight: 900;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.search-results-main {
+  flex: 1;
+}
+
+.listing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Loading & Empty State Styling */
+.empty-results {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 20px;
+  border: 1px dashed var(--anisell-border);
+  color: var(--anisell-text-secondary);
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: var(--anisell-blue);
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #f1f5f9;
+  border-top: 5px solid var(--anisell-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 24px;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+@media (max-width: 1024px) {
+  .search-page-container { flex-direction: column; }
+  .filter-sidebar { width: 100%; }
+  .listing-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .listing-grid { grid-template-columns: 1fr; }
+}
