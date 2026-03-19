@@ -44,6 +44,11 @@
   font-size: 14px;
 }
 
+.search a {
+  display: flex;
+  text-decoration: none;
+}
+
 .search button {
   background: #007bff;
   color: #fff;
@@ -52,6 +57,14 @@
   border-radius: 100px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+@media (max-width: 480px) {
+  .search button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
 }
 
 .search button:hover {

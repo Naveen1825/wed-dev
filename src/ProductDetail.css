@@ -294,6 +294,7 @@
   font-size: 24px;
   font-weight: 800;
   color: var(--anisell-text-primary);
+  padding: 0 20px 0 20px;
   margin-bottom: 40px;
 }
 
@@ -309,7 +310,7 @@
 
 .review-card {
   background: white;
-  padding: 0 0 32px 0;
+  padding: 0 20px 32px 20px;
   border-bottom: 1px solid var(--anisell-border);
 }
 
