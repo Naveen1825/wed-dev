@@ -1,19 +1,28 @@
 import React from 'react';
 import './ProductCard.css';
+import { useNavigate } from 'react-router-dom';
 import { FaMars, FaVenus, FaVenusMars } from 'react-icons/fa';
 import { FiCalendar, FiMapPin} from 'react-icons/fi';
 import { MdVerified } from 'react-icons/md';
 import type { Product } from '../../hooks/useSearchData';
 
+// --- Types ---
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const navigate = useNavigate();
   const isMale = product.productGender.toLowerCase() === 'male';
   
+  // Navigation handler
+  const handleCardClick = () => {
+    navigate(`/product/${product.productId}`);
+  };
+
   return (
-    <article className="product-card" onClick={() => console.log('View product', product.productId)}>
+    <article className="product-card" onClick={handleCardClick}>
+      {/* Media Content */}
       <div className="product-card-image-section">
         <img 
           src={product.productMedia[0]} 
@@ -22,15 +31,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         />
       </div>
       
+      {/* Information Section */}
       <div className="product-card-body">
         <div className="product-card-header">
           <h2 className="product-card-title">
             {product.productSubCategory}
-            {product.productVaccinated && (
-              <MdVerified className="verified-badge-icon" title="Vaccinated" />
-            )}
-             {product.productIsPair ? <FaVenusMars className="gender-icon-pair" /> : 
-              isMale ? <FaMars className="gender-icon-male" /> : <FaVenus className="gender-icon-female" />}  
+            
+            {/* Badges/Icons Row */}
+            <div className="card-badge-row">
+              {product.productVaccinated && (
+                <MdVerified className="verified-badge-icon" title="Vaccinated" />
+              )}
+              {product.productIsPair ? (
+                <FaVenusMars className="gender-icon-pair" />
+              ) : isMale ? (
+                <FaMars className="gender-icon-male" />
+              ) : (
+                <FaVenus className="gender-icon-female" />
+              )}
+            </div>
           </h2>
         </div>
         
@@ -41,6 +60,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <span className="price-value">{product.productPrice.toLocaleString('en-IN')}</span>
         </div>
 
+        {/* Info Chips Footer */}
         <footer className="product-card-footer">
           <div className="info-chip">
             <FiMapPin className="chip-icon" />

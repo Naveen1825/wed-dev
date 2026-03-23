@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './SearchResults.css';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import FilterSidebar from './components/search/FilterSidebar';
 import ProductCard from './components/common/ProductCard';
 import { useSearchData } from './hooks/useSearchData';
+import { FiFilter } from 'react-icons/fi';
 
 /**
  * SearchResults Component
@@ -14,6 +15,7 @@ import { useSearchData } from './hooks/useSearchData';
  */
 const SearchResults: React.FC = () => {
   const { products, loading } = useSearchData();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   if (loading) {
     return (
@@ -29,8 +31,23 @@ const SearchResults: React.FC = () => {
       <Navbar />
       
       <div className="search-page-container">
+        {/* Mobile Filter Toggle */}
+        <div className="mobile-filter-bar">
+          <button 
+            className="mobile-filter-btn"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <FiFilter /> Filters & Sort
+          </button>
+          <span className="results-count-mobile">{products.length} Listings</span>
+        </div>
+
         {/* Results count is now handled inside FilterSidebar */}
-        <FilterSidebar resultsCount={products.length} />
+        <FilterSidebar 
+          resultsCount={products.length} 
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
 
         <main className="search-results-main">
           {/* Listing Grid */}

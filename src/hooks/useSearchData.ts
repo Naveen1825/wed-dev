@@ -1,11 +1,29 @@
 import { useState, useEffect } from 'react';
 
+/**
+ * --- Type Definitions ---
+ */
+
+export interface Address {
+  type: string;
+  name: string;
+  phone: string;
+  pincode: string;
+  locality: string;
+  addressLine: string;
+  city: string;
+  state: string;
+}
+
 export interface User {
   UserId: string;
   sellerProfile: string;
   UserName: string;
   UserEmail: string;
   UserNumber: string;
+  dateOfBirth?: string;
+  Gender?: string;
+  addresses?: Address[];
 }
 
 export interface Review {
@@ -28,6 +46,8 @@ export interface Product {
   productIsPair: boolean;
   productType: string;
   productReviews: Review[];
+  oldSalesCount?: number;
+  newSalesCount?: number;
   sellerLocation?: string;
   sellerName?: string;
 }
@@ -40,8 +60,27 @@ export interface Seller {
   productIds: string[];
   rating: number;
   pets: number;
+  dateOfBirth?: string;
+  Gender?: string;
+  addresses?: Address[];
+  analytics?: {
+    totalSales: number;
+    revenue: number;
+    storeViews: number;
+    conversion: number;
+    storeRating: number;
+    salesHistory: number[];
+  };
 }
 
+/**
+ * --- Custom Hook ---
+ */
+
+/**
+ * Fetches and processes marketplace data from products.json.
+ * Joins products with their respective sellers for enhanced display.
+ */
 export const useSearchData = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sellers, setSellers] = useState<Seller[]>([]);
@@ -49,38 +88,49 @@ export const useSearchData = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
         const response = await fetch('/products.json');
+        if (!response.ok) throw new Error('Data fetch failed');
+        
         const data = await response.json();
         
-        // Simulating matching products with their sellers
+        if (!isMounted) return;
+
+        // Map products with seller context
         const joinedProducts = data.products.map((product: Product) => {
           const seller = data.sellers.find((s: Seller) => 
             s.productIds.includes(product.productId)
           );
           return {
             ...product,
-            sellerLocation: seller ? seller.sellerLocation : 'Unknown Location',
-            sellerName: seller ? seller.sellerName : 'Anonymous Seller'
+            sellerLocation: seller?.sellerLocation || 'Unknown Location',
+            sellerName: seller?.sellerName || 'Anonymous Seller'
           };
         });
 
         setProducts(joinedProducts);
+        
+        // Enrich seller objects
         setSellers(data.sellers.map((s: any) => ({
           ...s,
-          rating: 4.8, // Mocked rating
-          pets: s.productIds.length
+          rating: s.analytics?.storeRating || 5.0,
+          pets: s.productIds?.length || 0
         })));
+        
         setUsers(data.users || []);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Core data ingestion error:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchData();
+
+    return () => { isMounted = false; };
   }, []);
 
   return { products, sellers, users, loading };

@@ -2,13 +2,21 @@
    NAVBAR
 ========================= */
 
+.nav-wrapper {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: clamp(10px, 4vw, 40px);
-  padding: 16px 20px;
-  max-width: 1200px;
+  padding: 12px 20px;
+  max-width: 1240px;
   margin: 0 auto;
 }
 
@@ -688,15 +696,15 @@
 
 @media (max-width: 640px) {
   .pet-grid {
-    grid-template-columns: 1fr;
-    max-width: 380px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
     margin: 0 auto;
   }
   
   .pet-seller-row {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 
   .sellers-grid-minimal {
@@ -824,6 +832,76 @@
   font-size: 14px;
   color: #64748b;
   line-height: 1.6;
+}
+
+/* =========================
+   HOME OPTIMIZATIONS
+========================= */
+
+.top-performer-tag {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  background: linear-gradient(135deg, #ff9a00 0%, #ff5e00 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 8px rgba(255, 94, 0, 0.3);
+  z-index: 5;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.seller-card-minimal {
+  position: relative; /* For top-performer tag positioning */
+}
+
+/* Ensure marketplace headers look premium */
+.marketplace-header .badge {
+  background: linear-gradient(to right, #e6f0ff, #f0f7ff);
+  color: #007bff;
+  border: 1px solid #d0e3ff;
+}
+
+/* =========================
+   GENERIC UTILITIES
+======================== */
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 900px) {

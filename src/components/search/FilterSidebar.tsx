@@ -1,18 +1,29 @@
 import React from 'react';
+import { FiX } from 'react-icons/fi';
 
 interface FilterSidebarProps {
   resultsCount: number;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const FilterSidebar: React.FC<FilterSidebarProps> = ({ resultsCount }) => {
+const FilterSidebar: React.FC<FilterSidebarProps> = ({ resultsCount, isOpen, onClose }) => {
   return (
-    <aside className="filter-sidebar">
-      <header className="sidebar-header">
-        <div className="sidebar-title-row">
-          Filters
-          <span className="sidebar-results-count">{resultsCount} Listings</span>
-        </div>
-      </header>
+    <>
+      <div 
+        className={`filter-sidebar-overlay ${isOpen ? 'active' : ''}`} 
+        onClick={onClose}
+      />
+      <aside className={`filter-sidebar ${isOpen ? 'open' : ''}`}>
+        <header className="sidebar-header">
+          <div className="sidebar-title-row">
+            <span>Filters</span>
+            <button className="sidebar-close-btn" onClick={onClose}>
+              <FiX />
+            </button>
+            <span className="sidebar-results-count">{resultsCount} Listings</span>
+          </div>
+        </header>
       
       {/* Moved Sort here */}
       <div className="filter-group">
@@ -98,7 +109,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ resultsCount }) => {
           </label>
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 
