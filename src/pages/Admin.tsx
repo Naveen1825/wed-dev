@@ -6,7 +6,7 @@ import {
   FiHome, FiBarChart2, FiActivity,
 } from 'react-icons/fi';
 import { MdStorefront } from 'react-icons/md';
-import { useSearchData } from './hooks/useSearchData';
+import { useSearchData } from '../hooks/useSearchData';
 import './Admin.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -87,6 +87,38 @@ const StatusPill: React.FC<{ status: string }> = ({ status }) => (
   <span className={`status-pill ${status}`}>
     {status.charAt(0).toUpperCase() + status.slice(1)}
   </span>
+);
+
+/**
+ * Reusable panel component for consistent dashboard aesthetics.
+ */
+const AdminPanel: React.FC<{ title: React.ReactNode; action?: React.ReactNode; children: React.ReactNode; full?: boolean }> = ({ title, action, children, full }) => (
+  <div className={full ? "admin-panel-full" : "admin-panel"}>
+    <div className="admin-panel-header">
+      <span className="admin-panel-title">{title}</span>
+      {action}
+    </div>
+    {children}
+  </div>
+);
+
+/**
+ * Reusable filter button group for tables.
+ */
+const FilterTabs: React.FC<{
+  options: readonly string[];
+  current: string;
+  counts: Record<string, number>;
+  onSelect: (val: any) => void;
+}> = ({ options, current, counts, onSelect }) => (
+  <div className="admin-filter-bar">
+    {options.map(f => (
+      <button key={f} className={`admin-filter-btn ${current === f ? 'active' : ''}`} onClick={() => onSelect(f)}>
+        {f.charAt(0).toUpperCase() + f.slice(1)}
+        <span className="admin-filter-count">{counts[f]}</span>
+      </button>
+    ))}
+  </div>
 );
 
 // ─── Inquiry Modal ─────────────────────────────────────────────────────────────
@@ -177,6 +209,7 @@ const Admin: React.FC = () => {
   const { sellers, products, users, loading } = useSearchData();
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const [hoveredBar, setHoveredBar] = useState<{sellerId: string, dayIndex: number, value: number} | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [inquiries, setInquiries] = useState<Inquiry[]>(() => getInquiries());
   const [pendingListings, setPendingListings] = useState<PendingListing[]>(() => {
@@ -206,6 +239,9 @@ const Admin: React.FC = () => {
   const [inquiryFilter, setInquiryFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [toast, setToast] = useState<{ msg: string; type?: 'error' } | null>(null);
 
+  /**
+   * Universal toast notification handler for admin actions.
+   */
   const showToast = useCallback((msg: string, type?: 'error') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
@@ -238,7 +274,10 @@ const Admin: React.FC = () => {
     showToast('Listing rejected.', 'error');
   };
 
-  // Enhanced traffic analytics
+  /**
+   * Derive traffic and conversion analytics from seller data.
+   * Calculates platform-wide views, sales, conversion trends, and ratings.
+   */
   const trafficAnalytics = useMemo(() => {
     const activeSellers = sellers.filter(s => s.analytics?.storeViews && s.analytics.storeViews > 0);
     const totalViews = activeSellers.reduce((sum, s) => sum + (s.analytics?.storeViews || 0), 0);
@@ -251,15 +290,15 @@ const Admin: React.FC = () => {
       ? sellersWithRating.reduce((sum, s) => sum + (s.analytics!.storeRating!), 0) / sellersWithRating.length
       : 0;
 
-    // Calculate trend (last 7 days vs previous 7 days)
+    // Calculate trend (last 3 days vs previous 3 days)
     const recentSales = activeSellers.reduce((sum, s) => {
       const history = s.analytics?.salesHistory || [];
-      return sum + history.slice(-3).reduce((h, v) => h + v, 0); // Last 3 days
+      return sum + history.slice(-3).reduce((h, v) => h + v, 0);
     }, 0);
     
     const previousSales = activeSellers.reduce((sum, s) => {
       const history = s.analytics?.salesHistory || [];
-      return sum + history.slice(-6, -3).reduce((h, v) => h + v, 0); // Previous 3 days
+      return sum + history.slice(-6, -3).reduce((h, v) => h + v, 0);
     }, 0);
 
     const salesTrend = previousSales > 0 ? ((recentSales - previousSales) / previousSales * 100) : 0;
@@ -501,11 +540,11 @@ const Admin: React.FC = () => {
               </div>
 
               {/* Top Products */}
-              <div className="admin-panel-full">
-                <div className="admin-panel-header">
-                  <span className="admin-panel-title"><FiTrendingUp /> Top Performing Products</span>
-                  <button className="admin-panel-action" onClick={() => setActiveTab('listings')}>Manage Listings</button>
-                </div>
+              <AdminPanel 
+                full 
+                title={<><FiTrendingUp /> Top Performing Products</>}
+                action={<button className="admin-panel-action" onClick={() => setActiveTab('listings')}>Manage Listings</button>}
+              >
                 <table className="admin-table">
                   <thead>
                     <tr><th>#</th><th>Product</th><th>Type</th><th>Price</th><th>Sales</th><th>Seller</th></tr>
@@ -531,7 +570,7 @@ const Admin: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </AdminPanel>
             </>
           )}
 
@@ -687,16 +726,57 @@ const Admin: React.FC = () => {
                         </div>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 60 }}>
                           {history.map((val, i) => (
-                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                              <div style={{
-                                width: '100%',
-                                height: `${Math.round((val / maxVal) * 50)}px`,
-                                background: i === 6 ? '#2874f0' : '#e8f0fe',
-                                borderRadius: '3px 3px 0 0',
-                                minHeight: 4,
-                                transition: 'height 0.4s ease',
-                              }} />
+                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, position: 'relative' }}>
+                              <div 
+                                style={{
+                                  width: '100%',
+                                  height: `${Math.round((val / maxVal) * 50)}px`,
+                                  background: i === 6 ? '#2874f0' : '#e8f0fe',
+                                  borderRadius: '3px 3px 0 0',
+                                  minHeight: 4,
+                                  transition: 'all 0.2s ease',
+                                  cursor: 'pointer',
+                                  boxShadow: hoveredBar?.sellerId === seller.sellerId && hoveredBar?.dayIndex === i ? '0 2px 8px rgba(40, 116, 240, 0.3)' : 'none',
+                                  transform: hoveredBar?.sellerId === seller.sellerId && hoveredBar?.dayIndex === i ? 'translateY(-2px)' : 'translateY(0)',
+                                }}
+                                onMouseEnter={() => setHoveredBar({ sellerId: seller.sellerId, dayIndex: i, value: val })}
+                                onMouseLeave={() => setHoveredBar(null)}
+                              />
                               <span style={{ fontSize: 9, color: '#878787' }}>D{i + 1}</span>
+                              
+                              {/* Tooltip */}
+                              {hoveredBar?.sellerId === seller.sellerId && hoveredBar?.dayIndex === i && (
+                                <div style={{
+                                  position: 'absolute',
+                                  bottom: '100%',
+                                  left: '50%',
+                                  transform: 'translateX(-50%) translateY(-8px)',
+                                  background: '#212121',
+                                  color: 'white',
+                                  padding: '6px 10px',
+                                  borderRadius: '6px',
+                                  fontSize: '12px',
+                                  fontWeight: '600',
+                                  whiteSpace: 'nowrap',
+                                  zIndex: 10,
+                                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                                  pointerEvents: 'none',
+                                }}>
+                                  <div style={{ fontSize: '10px', opacity: 0.8, marginBottom: '2px' }}>Day {i + 1}</div>
+                                  <div>{val} sales</div>
+                                  <div style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    width: 0,
+                                    height: 0,
+                                    borderLeft: '4px solid transparent',
+                                    borderRight: '4px solid transparent',
+                                    borderTop: '4px solid #212121',
+                                  }} />
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -710,21 +790,22 @@ const Admin: React.FC = () => {
 
           {/* ─── INQUIRIES ──────────────────────────────────────────── */}
           {activeTab === 'inquiries' && (
-            <div className="admin-panel-full">
-              <div className="admin-panel-header">
-                <span className="admin-panel-title"><FiMail /> Buyer Inquiries</span>
-              </div>
-              <div className="admin-filter-bar">
-                {(['all', 'pending', 'approved', 'rejected'] as const).map(f => (
-                  <button key={f} className={`admin-filter-btn ${inquiryFilter === f ? 'active' : ''}`}
-                    onClick={() => setInquiryFilter(f)}>
-                    {f.charAt(0).toUpperCase() + f.slice(1)}
-                    <span className="admin-filter-count">
-                      {f === 'all' ? inquiries.length : inquiries.filter(i => i.status === f).length}
-                    </span>
-                  </button>
-                ))}
-              </div>
+            <AdminPanel 
+              full 
+              title={<><FiMail /> Buyer Inquiries</>}
+            >
+              <FilterTabs 
+                options={['all', 'pending', 'approved', 'rejected'] as const}
+                current={inquiryFilter}
+                counts={{
+                  all: inquiries.length,
+                  pending: inquiries.filter(i => i.status === 'pending').length,
+                  approved: inquiries.filter(i => i.status === 'approved').length,
+                  rejected: inquiries.filter(i => i.status === 'rejected').length
+                }}
+                onSelect={setInquiryFilter}
+              />
+              
               {filteredInquiries.length === 0 ? (
                 <div className="admin-empty">
                   <FiMail />
@@ -769,26 +850,27 @@ const Admin: React.FC = () => {
                   </tbody>
                 </table>
               )}
-            </div>
+            </AdminPanel>
           )}
 
           {/* ─── LISTING APPROVALS ──────────────────────────────────── */}
           {activeTab === 'listings' && (
-            <div className="admin-panel-full">
-              <div className="admin-panel-header">
-                <span className="admin-panel-title"><FiPackage /> Listing Approvals</span>
-              </div>
-              <div className="admin-filter-bar">
-                {(['all', 'pending', 'approved', 'rejected'] as const).map(f => (
-                  <button key={f} className={`admin-filter-btn ${listingFilter === f ? 'active' : ''}`}
-                    onClick={() => setListingFilter(f)}>
-                    {f.charAt(0).toUpperCase() + f.slice(1)}
-                    <span className="admin-filter-count">
-                      {f === 'all' ? pendingListings.length : pendingListings.filter(l => l.status === f).length}
-                    </span>
-                  </button>
-                ))}
-              </div>
+            <AdminPanel 
+              full 
+              title={<><FiPackage /> Listing Approvals</>}
+            >
+              <FilterTabs 
+                options={['all', 'pending', 'approved', 'rejected'] as const}
+                current={listingFilter}
+                counts={{
+                  all: pendingListings.length,
+                  pending: pendingListings.filter(l => l.status === 'pending').length,
+                  approved: pendingListings.filter(l => l.status === 'approved').length,
+                  rejected: pendingListings.filter(l => l.status === 'rejected').length
+                }}
+                onSelect={setListingFilter}
+              />
+              
               {filteredListings.length === 0 ? (
                 <div className="admin-empty"><FiPackage /><p>No listings found.</p></div>
               ) : (
@@ -824,7 +906,7 @@ const Admin: React.FC = () => {
                   </tbody>
                 </table>
               )}
-            </div>
+            </AdminPanel>
           )}
 
           {/* ─── SELLERS ────────────────────────────────────────────── */}
@@ -876,19 +958,19 @@ const Admin: React.FC = () => {
                 </thead>
                 <tbody>
                   {users.map(u => (
-                    <tr key={u.UserId}>
+                    <tr key={u.uid || u.UserId}>
                       <td>
                         <div className="tbl-user-cell">
-                          <img src={u.sellerProfile} alt="" className="tbl-product-img" style={{ borderRadius: '50%' }} />
+                          <img src={u.photoURL || u.sellerProfile || 'https://www.w3schools.com/howto/img_avatar.png'} alt="" className="tbl-product-img" style={{ borderRadius: '50%' }} />
                           <div>
-                            <div className="tbl-product-name">{u.UserName}</div>
-                            <div className="tbl-product-sub">{u.UserId}</div>
+                            <div className="tbl-product-name">{u.displayName || u.UserName}</div>
+                            <div className="tbl-product-sub">{u.uid || u.UserId}</div>
                           </div>
                         </div>
                       </td>
-                      <td>{u.UserEmail}</td>
-                      <td>{u.UserNumber}</td>
-                      <td>{u.Gender || '—'}</td>
+                      <td>{u.email || u.UserEmail}</td>
+                      <td>{u.phone || u.UserNumber}</td>
+                      <td>{(u.gender || u.Gender) || '—'}</td>
                       <td>{u.dateOfBirth || '—'}</td>
                       <td>{u.addresses?.length ?? 0}</td>
                       <td><StatusPill status="approved" /></td>

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const Footer = () => {
   return (
     <footer className="main-footer">
@@ -15,11 +17,11 @@ const Footer = () => {
         <div className="footer-column">
           <h5>COMPANY</h5>
           <ul>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">How It Works</a></li>
-            <li><a href="#">Seller Registration</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Careers</a></li>
+            <li><Link to="/about">About Us</Link></li>
+            <li><Link to="/how-it-works">How It Works</Link></li>
+            <li><Link to="/seller-register">Seller Registration</Link></li>
+            <li><Link to="/blog">Blog</Link></li>
+            <li><Link to="/careers">Careers</Link></li>
           </ul>
         </div>
 
@@ -49,7 +51,7 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="footer-bottom-container">
           <p className="copyright">
-            © 2025 Anisell. All rights reserved. 🐾
+            © 2025 Anisell. All rights reserved.
           </p>
           <div className="dev-credits">
             <img src="https://bustling-trick-3d0.notion.site/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fpublic.notion-static.com%2Fd344584e-e21a-4e9c-8765-8f7d563070cc%2Fdeadend_logo_(3).png?table=custom_emoji&id=3139801e-d37b-80f2-a1b7-007a38c942a5&spaceId=5739801e-d37b-8171-934c-0003c9bb7643&width=160&userId=&cache=v2" alt="Dev Logo" className="dev-logo" />

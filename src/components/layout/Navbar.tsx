@@ -1,0 +1,93 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { auth, db } from '../../services/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
+
+const Navbar = () => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribeAuth = auth?.onAuthStateChanged((user: User | null) => {
+      setCurrentUser(user);
+      if (!user) {
+         setUserProfile(null);
+      }
+    });
+    return () => unsubscribeAuth?.();
+  }, []);
+
+  // Sync with Firestore for real-time updates across components
+  useEffect(() => {
+    if (!currentUser || !db) return;
+    
+    // Using onSnapshot for real-time sync of profile picture and other info
+    const unsubscribeProfile = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
+      if (docSnap.exists()) {
+        setUserProfile(docSnap.data());
+      }
+    });
+
+    return () => unsubscribeProfile();
+  }, [currentUser]);
+
+  // Derived profile imageURL
+  const profileImage = userProfile?.photoURL || currentUser?.photoURL;
+  const userInitial = (currentUser?.displayName || currentUser?.email || 'U').charAt(0).toUpperCase();
+
+  return (
+    <div className="nav-wrapper">
+      <nav className="nav">
+        <Link to="/">
+          <img
+            src="https://anisell.in/wp-content/uploads/2025/06/91-93450-29589-1.png"
+            alt="AniSell Logo"
+            className="logo"
+          />
+        </Link>
+
+        <div className="search">
+          <input type="text" placeholder="Search pets, breeds, accessories..." />
+          <Link to="/result">
+            <button>Search</button>
+          </Link>
+        </div>
+
+        {currentUser ? (
+          // User is signed in - show profile
+          <Link to="/profile" style={{ textDecoration: 'none' }}>
+            <div className="nav-profile-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="My Profile"
+                  className="user-profile"
+                  style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #e2e8f0', background: '#fff' }}
+                />
+              ) : (
+                <div 
+                  className="user-initial-avatar"
+                  style={{ 
+                    width: '38px', height: '38px', borderRadius: '50%', background: '#2874f0', 
+                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: '700', fontSize: '16px'
+                  }}
+                >
+                  {userInitial}
+                </div>
+              )}
+            </div>
+          </Link>
+        ) : (
+          // User is not signed in - show login button
+          <Link to="/login" style={{ textDecoration: 'none' }}>
+            <button className="login-btn">Sign in / Up</button>
+          </Link>
+        )}
+      </nav>
+    </div>
+  );
+};
+
+export default Navbar;

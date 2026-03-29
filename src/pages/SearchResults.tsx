@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import './SearchResults.css';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import FilterSidebar from './components/search/FilterSidebar';
-import ProductCard from './components/common/ProductCard';
-import { useSearchData } from './hooks/useSearchData';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+import FilterSidebar from '../components/search/FilterSidebar';
+import ProductCard from '../components/common/ProductCard';
+import { useSearchData } from '../hooks/useSearchData';
 import { FiFilter } from 'react-icons/fi';
 
 /**

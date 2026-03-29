@@ -1,6 +1,5 @@
 import React from 'react';
 import './ProductCard.css';
-import { useNavigate } from 'react-router-dom';
 import { FaMars, FaVenus, FaVenusMars } from 'react-icons/fa';
 import { FiCalendar, FiMapPin} from 'react-icons/fi';
 import { MdVerified } from 'react-icons/md';
@@ -12,12 +11,11 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const navigate = useNavigate();
   const isMale = product.productGender.toLowerCase() === 'male';
   
   // Navigation handler
   const handleCardClick = () => {
-    navigate(`/product/${product.productId}`);
+    window.open(`/product/${product.productId}`, '_blank');
   };
 
   return (

@@ -32,20 +32,24 @@
 /* Image Section Styling */
 .product-card-image-section {
   position: relative;
-  height: 240px;
+  border-radius: 16px;
+  margin: 12px;
+  height: 200px;
   overflow: hidden;
-  background-color: var(--anisell-bg-gray);
 }
 
 .product-card-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s ease;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
 }
 
 .product-card:hover .product-card-image {
-  transform: scale(1.06);
+  transform: scale(1.08);
 }
 
 /* Card Body Section */
@@ -66,7 +70,6 @@
 
 .product-card-title {
   font-size: 18px;
-  font-weight: 800;
   color: var(--anisell-slate-800);
   display: flex;
   align-items: center;

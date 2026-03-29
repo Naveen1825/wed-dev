@@ -1,66 +1,79 @@
 import React, { useMemo } from 'react';
-import { MdVerified } from 'react-icons/md';
-import { FaStar, FaPaw } from 'react-icons/fa';
-import type { Seller } from '../../hooks/useSearchData';
+import type { Product } from '../../hooks/useSearchData';
 
 // --- Interface ---
-interface SellerGridProps {
-  sellers: Seller[];
+interface TopSellingPetsProps {
+  products: Product[];
 }
 
-const SellerGrid: React.FC<SellerGridProps> = ({ sellers }) => {
-  // Optimization: Filter out sellers with no products and sort by totalSales or rating
-  // The user wants to KEEP sorting by number of sales but display number of pets
-  const topSellers = useMemo(() => {
-    return sellers
-      .filter((s) => s.productIds?.length > 0)
-      .sort((a, b) => {
-        const salesA = a.analytics?.totalSales || 0;
-        const salesB = b.analytics?.totalSales || 0;
-        if (salesA !== salesB) return salesB - salesA;
-        return (b.rating || 0) - (a.rating || 0);
-      })
-      .slice(0, 4); 
-  }, [sellers]);
+interface CategoryData {
+  category: string;
+  topProduct: Product;
+  totalSales: number;
+}
 
-  if (topSellers.length === 0) return null;
+const TopSellingPets: React.FC<TopSellingPetsProps> = ({ products }) => {
+  // Get top 4 categories with their best-selling products
+  const topCategories = useMemo(() => {
+    // Group products by category and find the best-selling product in each
+    const categoryMap = new Map<string, Product>();
+    
+    products
+      .filter((product) => (product.newSalesCount || 0) > 0) // Only pets with sales
+      .forEach((product) => {
+        const category = product.productType;
+        const existing = categoryMap.get(category);
+        
+        // If no product exists for this category or current product has more sales
+        if (!existing || (product.newSalesCount || 0) > (existing.newSalesCount || 0)) {
+          categoryMap.set(category, product);
+        }
+      });
+    
+    // Convert to array and sort by total sales in category
+    const categories: CategoryData[] = Array.from(categoryMap.entries()).map(([category, product]) => ({
+      category,
+      topProduct: product,
+      totalSales: products
+        .filter(p => p.productType === category)
+        .reduce((sum, p) => sum + (p.newSalesCount || 0), 0)
+    }));
+    
+    // Sort by total sales and take top 4
+    return categories
+      .sort((a, b) => b.totalSales - a.totalSales)
+      .slice(0, 4);
+  }, [products]);
+
+  if (topCategories.length === 0) return null;
 
   return (
     <section className="sellers-section">
       <div className="sellers-header">
-        <span className="badge">CERTIFIED SELLERS</span>
-        <h2>Top Store Community</h2>
-        <p>Verified sellers with the highest performance and customer satisfaction.</p>
+        <span className="badge">TOP CATEGORIES</span>
+        <h2>Popular Pet Categories</h2>
+        <p>Best-selling subcategories from the top 4 most popular pet categories.</p>
       </div>
 
       <div className="sellers-grid-minimal">
-        {topSellers.map((seller) => (
-          <div key={seller.sellerId} className="seller-card-minimal">
-            {/* "TOP SELLER" badge removed as per request */}
-            
+        {topCategories.map(({ category, topProduct }) => (
+          <div 
+            key={category} 
+            className="seller-card-minimal"
+          >
             <div className="seller-avatar-minimal">
               <img 
-                src={seller.sellerProfile} 
-                alt={seller.sellerName} 
+                src={topProduct.productMedia[0]} 
+                alt={topProduct.productSubCategory} 
                 className="avatar-img"
               />
             </div>
             
             <h3 className="seller-name-minimal">
-              <MdVerified className="verified-icon-minimal" /> {seller.sellerName}
+              {topProduct.productSubCategory}
             </h3>
             
-            <p className="seller-location-minimal">{seller.sellerLocation}</p>
-            
-            <div className="seller-meta-minimal">
-              <span className="seller-ratio-minimal">
-                <FaStar /> {seller.rating?.toFixed(1) || '4.8'}
-              </span>
-              <span className="dot">•</span>
-              <span className="seller-sales-minimal" style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <FaPaw style={{ opacity: 0.6 }} /> {seller.pets || '0'} Pets
-              </span>
-            </div>
+            <p className="seller-location-minimal">{category}</p>
           </div>
         ))}
       </div>
@@ -68,4 +81,4 @@ const SellerGrid: React.FC<SellerGridProps> = ({ sellers }) => {
   );
 };
 
-export default SellerGrid;
+export default TopSellingPets;

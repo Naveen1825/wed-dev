@@ -4,10 +4,11 @@ import {
   FiUser, FiPackage, FiStar, FiShield, FiSettings, FiLogOut,
   FiChevronRight, FiMapPin, FiPlus, FiBarChart2, FiMenu, FiX
 } from 'react-icons/fi';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import { useSearchData } from './hooks/useSearchData';
-import type { Seller, Product } from './hooks/useSearchData';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+import { useSearchData } from '../hooks/useSearchData';
+import { auth } from '../services/firebase';
+import type { Seller, Product } from '../hooks/useSearchData';
 import './Profile.css';
 
 // --- Sub-Components ---
@@ -70,16 +71,58 @@ const SellerProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState('products');
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [highlightedListingId, setHighlightedListingId] = useState<string | null>(null);
+  const [hoveredBar, setHoveredBar] = useState<{dayIndex: number, value: number} | null>(null);
+
+  // Logout handler
+  const handleLogout = async () => {
+    try {
+      if (auth) {
+        await auth.signOut();
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   // Derive active seller
   const seller: Seller = useMemo(() => {
-    return sellers.find(s => s.sellerId === id) || sellers[0] || {
+    // Debug logging
+    console.log('SellerProfile - ID from URL:', id);
+    console.log('SellerProfile - Available sellers:', sellers.map(s => ({ id: s.sellerId, name: s.sellerName, hasHistory: !!s.analytics?.salesHistory })));
+    
+    // First try to find seller by ID if provided
+    if (id) {
+      const foundSeller = sellers.find(s => s.sellerId === id);
+      if (foundSeller) {
+        console.log('SellerProfile - Found seller by ID:', foundSeller.sellerName, 'Sales History:', foundSeller.analytics?.salesHistory);
+        return foundSeller;
+      }
+    }
+    
+    // If no ID provided or seller not found, use the first available seller with real data
+    const realSeller = sellers.find(s => s.analytics?.salesHistory && s.analytics.salesHistory.some(val => val > 0));
+    if (realSeller) {
+      console.log('SellerProfile - Using seller with real data:', realSeller.sellerName, 'Sales History:', realSeller.analytics?.salesHistory);
+      return realSeller;
+    }
+    
+    // Last resort: use first seller in the list
+    if (sellers.length > 0) {
+      console.log('SellerProfile - Using first seller:', sellers[0].sellerName, 'Sales History:', sellers[0].analytics?.salesHistory);
+      return sellers[0];
+    }
+    
+    // Only use mock data if absolutely no sellers are available
+    console.log('SellerProfile - Using mock data - no sellers available');
+    return {
       sellerId: 'mock-sel',
       sellerName: 'Paws & Whiskers',
       sellerProfile: 'https://randomuser.me/api/portraits/men/1.jpg',
       sellerLocation: 'Mumbai, MH',
       rating: 4.8,
       productIds: [],
+      pets: 0,
       analytics: {
         totalSales: 0, revenue: 0, storeViews: 0, conversion: 0, storeRating: 0, salesHistory: [0,0,0,0,0,0,0]
       }
@@ -159,7 +202,7 @@ const SellerProfile: React.FC = () => {
                 </button>
               ))}
               <div className="nav-divider"></div>
-              <button className="nav-item logout">
+              <button className="nav-item logout" onClick={handleLogout}>
                 <span className="nav-icon"><FiLogOut /></span>
                 <span className="nav-label">Logout Store</span>
               </button>
@@ -251,12 +294,54 @@ const SellerProfile: React.FC = () => {
                 <h3>Monthly Sales Trend</h3>
                 <div className="analytics-chart-container">
                   {(seller.analytics?.salesHistory || [0,0,0,0,0,0,0]).map((salesVal, i) => (
-                    <div key={i} className="chart-bar-group">
+                    <div key={i} className="chart-bar-group" style={{ position: 'relative' }}>
                       <div 
                         className={`chart-bar ${i === 6 ? 'active' : ''}`} 
-                        style={{ height: `${Math.min(salesVal * 1.5, 230)}px` }} 
+                        style={{ 
+                          height: `${Math.min(salesVal * 1.5, 230)}px`,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          boxShadow: hoveredBar?.dayIndex === i ? '0 2px 8px rgba(40, 116, 240, 0.3)' : 'none',
+                          transform: hoveredBar?.dayIndex === i ? 'translateY(-2px)' : 'translateY(0)',
+                        }}
+                        onMouseEnter={() => setHoveredBar({ dayIndex: i, value: salesVal })}
+                        onMouseLeave={() => setHoveredBar(null)}
                       />
                       <span className="chart-label">Day {i+1}</span>
+                      
+                      {/* Tooltip */}
+                      {hoveredBar?.dayIndex === i && (
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '100%',
+                          left: '50%',
+                          transform: 'translateX(-50%) translateY(-8px)',
+                          background: '#212121',
+                          color: 'white',
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          whiteSpace: 'nowrap',
+                          zIndex: 10,
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                          pointerEvents: 'none',
+                        }}>
+                          <div style={{ fontSize: '10px', opacity: 0.8, marginBottom: '2px' }}>Day {i + 1}</div>
+                          <div>{salesVal} sales</div>
+                          <div style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: 0,
+                            height: 0,
+                            borderLeft: '4px solid transparent',
+                            borderRight: '4px solid transparent',
+                            borderTop: '4px solid #212121',
+                          }} />
+                        </div>
+                      )}
                     </div>
                   ))}
                   <div className="chart-grid-line" style={{ bottom: '20px' }} />

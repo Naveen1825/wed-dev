@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiChevronLeft, FiHeart, FiStar, FiMessageSquare, FiPlayCircle, FiCalendar, FiMapPin, FiX, FiSend } from 'react-icons/fi';
+import { FiChevronLeft, FiStar, FiMessageSquare, FiPlayCircle, FiCalendar, FiMapPin, FiX, FiSend } from 'react-icons/fi';
 import { FaMars, FaVenus, FaVenusMars } from 'react-icons/fa';
 import { MdEmail, MdVerified } from 'react-icons/md';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import ProductCard from './components/common/ProductCard';
-import { useSearchData } from './hooks/useSearchData';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+import ProductCard from '../components/common/ProductCard';
+import { useSearchData } from '../hooks/useSearchData';
 import { saveInquiry } from './Admin';
-import type { Product, User } from './hooks/useSearchData';
+import type { Product, User } from '../hooks/useSearchData';
 import type { Inquiry } from './Admin';
 import './ProductDetail.css';
 
@@ -282,10 +282,9 @@ const ProductDetail: React.FC = () => {
             </div>
 
             <div className="action-button-group">
-              <button className="btn-contact-seller" onClick={() => setContactOpen(true)}>
+              <button className="btn-contact-seller" onClick={() => navigate(`/checkout/${product.productId}`)}>
                 <MdEmail /> Contact Seller
               </button>
-              <button className="btn-wishlist"><FiHeart /> Save</button>
             </div>
           </div>
         </section>
