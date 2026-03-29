@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import type { Product } from '../../hooks/useSearchData';
+import type { Product } from '@/types';
 
 interface BreedBrowserProps {
   products: Product[];

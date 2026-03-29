@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { Product } from '../../hooks/useSearchData';
+import type { Product } from '@/types';
 
 // --- Interface ---
 interface TopSellingPetsProps {

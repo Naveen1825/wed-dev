@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
-import { useSearchData } from '../hooks/useSearchData';
-import type { Product } from '../hooks/useSearchData';
-import '../App.css';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import { useSearchData } from '@/hooks/useSearchData';
+import type { Product } from '@/types';
+import '@/App.css';
 
 const Checkout: React.FC = () => {
   const { id } = useParams<{ id: string }>();

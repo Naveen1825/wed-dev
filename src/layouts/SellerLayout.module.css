@@ -1,0 +1,119 @@
+@import '@/styles/variables.css';
+
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  padding: var(--spacing-8) var(--spacing-4);
+  background-color: var(--color-background);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: var(--spacing-8);
+}
+
+.sidebarWrapper {
+  width: 280px;
+}
+
+.sidebar {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  position: sticky;
+  top: var(--spacing-8);
+}
+
+.profileSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.profileInfo {
+  overflow: hidden;
+}
+
+.storeName {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.storeBadge {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  width: 100%;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: var(--transition-fast);
+  text-align: left;
+}
+
+.navItem:hover {
+  background-color: var(--color-background);
+  color: var(--color-primary);
+}
+
+.navItemActive {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.navDivider {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: var(--spacing-4) 0;
+}
+
+.logout {
+  color: var(--color-error);
+}
+
+.logout:hover {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+.content {
+  flex: 1;
+}

@@ -3,7 +3,7 @@ import './ProductCard.css';
 import { FaMars, FaVenus, FaVenusMars } from 'react-icons/fa';
 import { FiCalendar, FiMapPin} from 'react-icons/fi';
 import { MdVerified } from 'react-icons/md';
-import type { Product } from '../../hooks/useSearchData';
+import type { Product } from '@/types';
 
 // --- Types ---
 interface ProductCardProps {

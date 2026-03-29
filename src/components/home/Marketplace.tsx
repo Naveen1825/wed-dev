@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import ProductCard from '../common/ProductCard';
-import type { Product } from '../../hooks/useSearchData';
+import type { Product } from '@/types';
 
 // --- Interface ---
 interface MarketplaceProps {

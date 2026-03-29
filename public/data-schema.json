@@ -1,0 +1,93 @@
+{
+  "users": [
+    {
+      "UserId": "string",
+      "sellerProfile": "string (URL)",
+      "UserName": "string",
+      "UserEmail": "string (email)",
+      "UserNumber": "string (phone)",
+      "dateOfBirth": "string (YYYY-MM-DD)",
+      "Gender": "Male|Female|Other",
+      "addresses": [
+        {
+          "type": "HOME|WORK|STORE|SHELTER",
+          "name": "string",
+          "phone": "string (phone)",
+          "pincode": "string",
+          "locality": "string",
+          "addressLine": "string",
+          "city": "string",
+          "state": "string"
+        }
+      ],
+      "orders": [
+        {
+          "orderId": "string",
+          "productId": "string",
+          "orderDate": "string (YYYY-MM-DD)",
+          "status": "DELIVERED|PROCESSING|CANCELLED|SHIPPED|PENDING|CONFIRMED",
+          "amount": "number"
+        }
+      ]
+    }
+  ],
+  "sellers": [
+    {
+      "sellerId": "string",
+      "sellerProfile": "string (URL)",
+      "sellerName": "string",
+      "sellerEmail": "string (email)",
+      "sellerNumber": "string (phone)",
+      "sellerCertificate": "string",
+      "sellerLocation": "string",
+      "productIds": ["string"],
+      "dateOfBirth": "string (YYYY-MM-DD)",
+      "Gender": "Male|Female|Other",
+      "addresses": [
+        {
+          "type": "STORE|SHELTER",
+          "name": "string",
+          "phone": "string (phone)",
+          "pincode": "string",
+          "locality": "string",
+          "addressLine": "string",
+          "city": "string",
+          "state": "string"
+        }
+      ],
+      "analytics": {
+        "totalSales": "number",
+        "revenue": "number",
+        "storeViews": "number",
+        "conversion": "number",
+        "storeRating": "number",
+        "salesHistory": ["number"]
+      }
+    }
+  ],
+  "products": [
+    {
+      "productId": "string",
+      "productCategory": "Pets|Toys",
+      "productType": "Dogs|Cats|Birds|Fish|Small Pets",
+      "productSubCategory": "string",
+      "productDescription": "string",
+      "productAge": "string",
+      "productGender": "Male|Female|Pair|Universal",
+      "productPrice": "number",
+      "productMedia": ["string (URL)"],
+      "productVaccinated": "boolean",
+      "productIsPair": "boolean",
+      "oldSalesCount": "number",
+      "newSalesCount": "number",
+      "productReviews": [
+        {
+          "userId": "string",
+          "comment": "string",
+          "datetime": "string (YYYY-MM-DD HH:MM)",
+          "rating": "number (1-5)"
+        }
+      ]
+    }
+  ]
+}
