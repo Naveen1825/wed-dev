@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { 
-  FiUser, FiPackage, FiStar, FiShield, 
+  FiUser, FiPackage, FiStar, 
   FiSettings, FiLogOut, FiBarChart2 
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
@@ -18,15 +18,14 @@ import styles from './SellerLayout.module.css';
 const SellerLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout, user } = useAuth();
+  const { logout, user, sellerData } = useAuth();
 
   const menuItems = [
     { id: 'dashboard',    icon: <FiBarChart2 />, label: 'Store Analytics', path: ROUTES.SELLER_DASHBOARD },
-    { id: 'products',     icon: <FiPackage />,   label: 'My Listings',    path: '/seller/products' },
-    { id: 'reviews',      icon: <FiStar />,      label: 'Customer Reviews', path: '/seller/reviews' },
-    { id: 'verification', icon: <FiShield />,    label: 'Store Verification', path: '/seller/verification' },
-    { id: 'profile',      icon: <FiUser />,      label: 'Store Profile',    path: '/seller/edit' },
-    { id: 'settings',     icon: <FiSettings />,  label: 'Merchant Settings', path: '/seller/settings' },
+    { id: 'products',     icon: <FiPackage />,   label: 'My Listings',    path: ROUTES.SELLER_DASHBOARD + '/products' },
+    { id: 'reviews',      icon: <FiStar />,      label: 'Customer Reviews', path: ROUTES.SELLER_DASHBOARD + '/reviews' },
+    { id: 'profile',      icon: <FiUser />,      label: 'Store Profile',    path: ROUTES.SELLER_DASHBOARD + '/edit' },
+    { id: 'settings',     icon: <FiSettings />,  label: 'Merchant Settings', path: ROUTES.SELLER_DASHBOARD + '/settings' },
   ];
 
   return (
@@ -42,7 +41,7 @@ const SellerLayout: React.FC = () => {
                <div className={styles.profileSection}>
                   <img src={user?.photoURL || 'https://www.w3schools.com/howto/img_avatar.png'} alt="" className={styles.avatar} />
                   <div className={styles.profileInfo}>
-                    <h4 className={styles.storeName}>{user?.displayName}</h4>
+                    <h4 className={styles.storeName}>{sellerData?.shopName || user?.displayName}</h4>
                     <span className={styles.storeBadge}>Verified Merchant</span>
                   </div>
                </div>
@@ -57,6 +56,18 @@ const SellerLayout: React.FC = () => {
                       {item.icon} {item.label}
                     </button>
                   ))}
+                  {user?.role === 'both' && (
+                     <>
+                        <div className={styles.navDivider} />
+                        <button 
+                           onClick={() => navigate(ROUTES.USER_PROFILE)}
+                           className={styles.navItem}
+                           style={{ color: '#2563eb', fontWeight: 700 }}
+                        >
+                           Customer Profile
+                        </button>
+                     </>
+                  )}
                   <div className={styles.navDivider} />
                   <button 
                     onClick={async () => { await logout(); navigate(ROUTES.HOME); }}

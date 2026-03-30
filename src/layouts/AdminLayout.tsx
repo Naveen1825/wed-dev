@@ -1,7 +1,8 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
-  FiGrid, FiUsers, FiShoppingBag, FiMessageSquare 
+  FiGrid, FiUsers, FiShoppingBag, FiArchive, 
+  FiDollarSign, FiPieChart, FiBell, FiBriefcase
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import styles from './AdminLayout.module.css';
@@ -16,10 +17,14 @@ const AdminLayout: React.FC = () => {
   const { user } = useAuth();
 
   const navItems = [
-    { path: '/admin', icon: <FiGrid />, label: 'Platform Metrics' },
-    { path: '/admin/accounts', icon: <FiUsers />, label: 'Identity Control' },
-    { path: '/admin/listings', icon: <FiShoppingBag />, label: 'Listing Oversight' },
-    { path: '/admin/inquiries', icon: <FiMessageSquare />, label: 'Inquiry Hub' },
+    { path: '/admin', icon: <FiGrid />, label: 'Overview' },
+    { path: '/admin/users', icon: <FiUsers />, label: 'User Management' },
+    { path: '/admin/sellers', icon: <FiBriefcase />, label: 'Seller Directory' },
+    { path: '/admin/products', icon: <FiShoppingBag />, label: 'Product Control' },
+    { path: '/admin/orders', icon: <FiArchive />, label: 'Order Tracking' },
+    { path: '/admin/payments', icon: <FiDollarSign />, label: 'Payments & Revenue' },
+    { path: '/admin/analytics', icon: <FiPieChart />, label: 'Platform Analytics' },
+    { path: '/admin/settings', icon: <FiBell />, label: 'Alerts & Settings' },
   ];
 
   return (
@@ -39,7 +44,7 @@ const AdminLayout: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`${styles.navItem} ${location.pathname === item.path ? styles.active : ''}`}
+              className={`${styles.navItem} ${(location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path))) ? styles.navItemActive : ''}`}
             >
               <span className={styles.icon}>{item.icon}</span>
               <span className={styles.label}>{item.label}</span>

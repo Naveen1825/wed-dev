@@ -1,22 +1,21 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  FiChevronLeft, FiStar, FiMessageSquare, FiPlayCircle, 
-  FiCalendar, FiMapPin, FiX, FiSend, FiPackage 
-} from 'react-icons/fi';
+import { FiChevronLeft, FiStar, FiMessageSquare, FiPlayCircle, FiCalendar, FiMapPin, FiX, FiSend } from 'react-icons/fi';
 import { FaMars, FaVenus, FaVenusMars } from 'react-icons/fa';
 import { MdEmail, MdVerified } from 'react-icons/md';
+import { ProductCard } from '@/components/ui/ProductCard';
 import { useSearchData } from '@/hooks/useSearchData';
 import { InquiryService } from '@/services/api/InquiryService';
-import { ProductCard } from '@/components/ui/ProductCard';
-import { Input } from '@/components/ui/Input';
-import { ROUTES } from '@/constants/routes';
-import type { Product, User } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { db } from '@/services/firebase/config';
+import type { Product, User, Review } from '@/types';
 import './ProductDetail.css';
 
+// --- Sub-Components ---
+
 /**
- * Review Item Component.
- * Standardized review display for pet listings.
+ * Review Item Component
  */
 const ReviewCard: React.FC<{ review: any; user: User | null }> = ({ review, user }) => (
   <div className="review-card">
@@ -43,7 +42,7 @@ const ReviewCard: React.FC<{ review: any; user: User | null }> = ({ review, user
 );
 
 /**
- * Contact Seller Modular Overlay.
+ * Contact Seller Modal — captures buyer info and sends to admin queue
  */
 const ContactSellerModal: React.FC<{
   product: Product;
@@ -54,13 +53,17 @@ const ContactSellerModal: React.FC<{
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
-      setError('Required fields must be completed.');
+      setError('Please fill in all required fields.');
       return;
     }
-    
+
     setLoading(true);
     try {
       await InquiryService.saveInquiry({
@@ -85,40 +88,90 @@ const ContactSellerModal: React.FC<{
   return (
     <div className="inquiry-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="inquiry-card">
-        <header className="inquiry-header">
-           <h3 className="inquiry-title">Portal Inquiry Hub</h3>
-           <button onClick={onClose} className="close-btn"><FiX /></button>
-        </header>
+        <div className="inquiry-header">
+          <div>
+            <h3 className="inquiry-title">Contact Seller</h3>
+            <p style={{ fontSize: 12, color: '#94a3b8', margin: '4px 0 0' }}>Your inquiry will be reviewed by our team first</p>
+          </div>
+          <button onClick={onClose} className="close-btn">
+            <FiX />
+          </button>
+        </div>
 
         {submitted ? (
           <div className="success-view">
-             <div className="success-icon">✅</div>
-             <h3 className="success-title">Discovery Logged</h3>
-             <p className="success-text">Your inquiry for {product.productSubCategory} has been queued for verification.</p>
-             <button onClick={onClose} className="button-base button-primary">Close Porter</button>
+            <div className="success-icon">✅</div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Inquiry Sent!</h3>
+            <p style={{ color: '#64748b', lineHeight: 1.6 }}>
+              Your request for <strong>{product.productSubCategory}</strong> has been received.
+              Our admin team will verify and forward it to the seller within 24 hours.
+            </p>
+            <button onClick={onClose} className="btn-post-review" style={{ marginTop: 24 }}>Close</button>
           </div>
         ) : (
-          <form className="inquiry-form" onSubmit={handleSubmit}>
-             <div className="inquiry-product-strip">
-               <img src={product.productMedia?.[0]} alt="" />
-               <div>
-                  <strong>{product.productSubCategory}</strong>
-                  <div className="price">₹{product.productPrice.toLocaleString()}</div>
-               </div>
-             </div>
+          <form onSubmit={handleSubmit} className="inquiry-form" style={{ padding: 0 }}>
+            <div className="inquiry-product-strip">
+              <img src={product.productMedia?.[0]} alt="" />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{product.productSubCategory}</div>
+                <div className="price">₹{product.productPrice.toLocaleString('en-IN')}</div>
+                <div style={{ fontSize: 11, color: '#94a3b8' }}>Seller: {product.sellerName}</div>
+              </div>
+            </div>
 
-             <div className="form-fields">
-                <Input label="Identity Title" placeholder="Arjun Kumar" required value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-                <Input label="Verified Email" type="email" placeholder="contact@arjun.com" required value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
-                <Input label="Contact Mobile" placeholder="+91 XXXXX XXXXX" required value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
-                <Input label="Discovery Notes" as="textarea" placeholder="Specific questions..." value={form.message} onChange={e => setForm({...form, message: e.target.value})} />
-                
-                {error && <div className="error-msg">{error}</div>}
-                
-                <button type="submit" className="button-base button-primary" disabled={loading}>
-                   <FiSend /> {loading ? 'Processing...' : 'Send Marketplace Inquiry'}
-                </button>
-             </div>
+            <div style={{ padding: '0 32px 32px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {error && (
+                <div style={{ background: '#fff1f1', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#dc2626' }}>
+                  {error}
+                </div>
+              )}
+
+              {[
+                { name: 'name', label: 'Your Name *', type: 'text', placeholder: 'e.g. Arjun Kumar' },
+                { name: 'email', label: 'Email Address *', type: 'email', placeholder: 'e.g. arjun@email.com' },
+                { name: 'phone', label: 'Phone Number *', type: 'tel', placeholder: 'e.g. +91 9988776655' },
+              ].map(field => (
+                <div key={field.name}>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {field.label}
+                  </label>
+                  <input
+                    name={field.name} type={field.type}
+                    placeholder={field.placeholder}
+                    value={form[field.name as keyof typeof form]}
+                    onChange={handleChange}
+                    style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                  />
+                </div>
+              ))}
+
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Message (optional)
+                </label>
+                <textarea
+                  name="message"
+                  placeholder="Any specific questions or preferences?"
+                  value={form.message}
+                  onChange={handleChange}
+                  rows={3}
+                  style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: 14, resize: 'none', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <p style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5 }}>
+                🔒 Your details are shared only with the verified seller after admin review.
+              </p>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-contact-seller"
+                style={{ width: '100%', margin: 0 }}
+              >
+                <FiSend /> {loading ? 'Sending...' : 'Send Marketplace Inquiry'}
+              </button>
+            </div>
           </form>
         )}
       </div>
@@ -126,13 +179,19 @@ const ContactSellerModal: React.FC<{
   );
 };
 
+// --- Main Component ---
+
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products, users, loading } = useSearchData();
   const [product, setProduct] = useState<Product | null>(null);
+  const [newComment, setNewComment] = useState("");
+  const [rating, setRating] = useState(0);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [contactOpen, setContactOpen] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const { user: authUser } = useAuth();
 
   useEffect(() => {
     if (!loading && products.length > 0) {
@@ -149,98 +208,157 @@ const ProductDetail: React.FC = () => {
       .slice(0, 4);
   }, [product, products]);
 
+  const formatLocation = (loc?: string) => {
+    if (!loc || loc === 'Global Marketplace') return 'Global';
+    const parts = loc.split(',').map(p => p.trim()).filter(p => p.length > 0);
+    const hasDigits = (s: string) => /\d/.test(s);
+    let cityIndex = parts.length - 2;
+    let stateIndex = parts.length - 1;
+    if (parts.length >= 3 && hasDigits(parts[parts.length - 1])) {
+      cityIndex = parts.length - 3;
+      stateIndex = parts.length - 2;
+    }
+    return (cityIndex >= 0 && stateIndex >= 0) ? `${parts[cityIndex]}, ${parts[stateIndex]}` : loc;
+  };
+
   if (loading || !product) {
     return <div className="loading-container"><div className="spinner" /></div>;
   }
 
   const isVideo = (url: string) => url.toLowerCase().endsWith('.mp4');
-  const isMale = product.productGender.toLowerCase() === 'male';
 
   return (
-    <div className="product-detail-workspace">
-      <main className="product-discovery-container">
-        <nav className="discovery-nav">
-          <button onClick={() => navigate(-1)} className="back-btn"><FiChevronLeft /> Back to Discovery</button>
+    <div className="product-page">
+      <main className="product-detail-container">
+        <nav className="breadcrumb">
+          <button onClick={() => navigate(-1)} className="back-btn"><FiChevronLeft /> Back to Search</button>
         </nav>
 
-        <section className="product-core-grid">
-          <div className="media-visuals">
-            <div className="main-viewport">
+        <section className="product-main">
+          {/* Visuals */}
+          <div className="product-visuals">
+            <div className="main-image-wrapper">
               {isVideo(product.productMedia[activeMediaIndex]) ? (
-                <video src={product.productMedia[activeMediaIndex]} className="media-object" controls autoPlay loop muted />
+                <video src={product.productMedia[activeMediaIndex]} className="main-image" controls autoPlay loop muted />
               ) : (
-                <img src={product.productMedia[activeMediaIndex]} alt="" className="media-object" />
+                <img src={product.productMedia[activeMediaIndex]} alt="" className="main-image" />
               )}
             </div>
-            <div className="media-thumbnails">
+            <div className="thumbnail-list">
               {product.productMedia.map((url, idx) => (
-                <div key={idx} className={`thumb ${idx === activeMediaIndex ? 'active' : ''}`} onClick={() => setActiveMediaIndex(idx)}>
-                  {isVideo(url) ? <FiPlayCircle /> : <img src={url} alt="" />}
+                <div key={idx} className={`thumbnail ${idx === activeMediaIndex ? 'active' : ''}`} onClick={() => setActiveMediaIndex(idx)}>
+                  {isVideo(url) ? <div className="video-thumbnail-placeholder"><FiPlayCircle className="play-icon" /></div> : <img src={url} alt="" />}
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="product-meta-panel">
-            <div className="header-strip">
-              <h1 className="listing-title">{product.productSubCategory}</h1>
-              <div className={`gender-tag ${product.productIsPair ? 'pair' : isMale ? 'male' : 'female'}`}>
-                {product.productIsPair ? <FaVenusMars /> : isMale ? <FaMars /> : <FaVenus />}
-                <span>{product.productGender}</span>
+          {/* Info Panel */}
+          <div className="product-info-panel">
+            <div className="title-row" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+              <h1 className="product-page-title" style={{ margin: 0, fontSize: '32px' }}>
+                {product.productSubCategory}
+              </h1>
+              <div 
+                className={`gender-badge ${product.productIsPair ? 'pair' : (product.productGender.toLowerCase() === 'male' ? 'male' : 'female')}`} 
+                style={{ marginBottom: 0, flexShrink: 0 }}
+              >
+                {product.productIsPair ? <FaVenusMars className="gender-icon" /> : (product.productGender.toLowerCase() === 'male' ? <FaMars className="gender-icon" /> : <FaVenus className="gender-icon" />)}
+                <span className="gender-text">{product.productIsPair ? 'Pair' : product.productGender}</span>
               </div>
             </div>
-            <div className="listing-price">₹{product.productPrice.toLocaleString()}</div>
+            <div className="product-page-price">₹{product.productPrice.toLocaleString('en-IN')}</div>
 
-            <div className="data-group">
-              <h3 className="group-title">Discovery Information</h3>
-              <p className="group-text">{product.productDescription}</p>
+            <div className="detail-section">
+              <h3 className="section-heading">Description</h3>
+              <p className="section-text">{product.productDescription}</p>
             </div>
 
-            <div className="data-group">
-              <h3 className="group-title">Listing Metrics</h3>
-              <ul className="metrics-list">
-                <li><MdVerified /> <strong>Vaccinated:</strong> {product.productVaccinated ? 'Standard Verified' : 'Limited'}</li>
-                <li><FiCalendar /> <strong>Age Cycle:</strong> {product.productAge}</li>
-                <li><FiMapPin /> <strong>Distribution Center:</strong> {product.sellerLocation || 'Global Marketplace'}</li>
+            <div className="detail-section">
+              <h3 className="section-heading">Specifications</h3>
+              <ul className="spec-list">
+                <li className="spec-list-item">
+                  <MdVerified className={`spec-list-icon ${product.productVaccinated ? 'is-verified' : 'not-verified'}`} />
+                  <span className="spec-label">Vaccinated:</span><span className="spec-value">{product.productVaccinated ? 'Yes' : 'No'}</span>
+                </li>
+                <li className="spec-list-item"><FiCalendar className="spec-list-icon" /><span className="spec-label">Age:</span><span className="spec-value">{product.productAge}</span></li>
+                <li className="spec-list-item"><FiMapPin className="spec-list-icon" /><span className="spec-label">Location:</span><span className="spec-value">{formatLocation(product.sellerLocation)}</span></li>
               </ul>
             </div>
 
-            <div className="action-cluster" style={{ display: 'flex', gap: '12px' }}>
-              <button className="button-base button-primary portal-cta" onClick={() => setContactOpen(true)} style={{ flex: 1 }}>
-                <MdEmail /> Request Identity
-              </button>
+            <div className="action-button-group" style={{ display: 'flex' }}>
               <button 
-                className="button-base button-secondary portal-cta" 
-                onClick={() => navigate(ROUTES.CHECKOUT.replace(':id', product.productId))}
-                style={{ flex: 1, backgroundColor: '#10b981', color: 'white' }}
+                className="btn-contact-seller" 
+                onClick={() => navigate(`/checkout/${product.productId}`)}
+                style={{ width: '100%' }}
               >
-                <FiPackage /> Adopt Participant
+                <MdEmail /> Contact Seller
               </button>
             </div>
           </div>
         </section>
 
-        <section className="discovery-extensions">
-          <h2 className="extension-title">Similar Pet Listings</h2>
-          <div className="discovery-grid">
-            {related.map(item => <ProductCard key={item.productId} product={item} variant="standard" />)}
+        {/* Related */}
+        <section className="related-section">
+          <h2 className="related-title">Related Products</h2>
+          <div className="related-products-grid">
+            {related.map(item => <ProductCard key={item.productId} product={item} />)}
           </div>
         </section>
 
-        <section className="verification-hub">
-          <h2 className="hub-title">
-            <FiMessageSquare /> <span>Community Feedback ({product.productReviews?.length || 0})</span>
+        {/* Reviews */}
+        <section className="reviews-section">
+          <h2 className="section-title-with-icon">
+            <FiMessageSquare className="title-icon" /> <span>Reviews ({product.productReviews?.length || 0})</span>
           </h2>
-          <div className="hub-layout">
-            <div className="hub-list">
+          <div className="reviews-layout">
+            <div className="reviews-list" style={{ flex: 1.5 }}>
               {product.productReviews?.length ? product.productReviews.map((r, i) => (
                 <ReviewCard key={i} review={r} user={users.find(u => u.uid === r.userId) || null} />
-              )) : <div className="no-review-placeholder">No community feedback captured for this listing yet.</div>}
+              )) : <div className="no-reviews"><p>No reviews yet.</p></div>}
+            </div>
+            <div className="post-review-card" style={{ flex: 1 }}>
+              <h3>Post a Review</h3>
+              <div className="rating-selector">
+                <span>Rating:</span>
+                <div className="stars-input">
+                  {[1,2,3,4,5].map(num => (
+                    <FiStar key={num} className={num <= rating ? "star-input-icon active" : "star-input-icon"} onClick={() => setRating(num)} />
+                  ))}
+                </div>
+              </div>
+              <textarea placeholder="Share your thoughts..." className="review-textarea" value={newComment} onChange={e => setNewComment(e.target.value)} />
+              <button className="btn-post-review" disabled={reviewSubmitting} onClick={async () => {
+                if (!authUser) { alert('Please log in to submit a review.'); return; }
+                if (rating === 0) { alert('Please select a rating.'); return; }
+                if (!newComment.trim()) { alert('Please write a comment.'); return; }
+                setReviewSubmitting(true);
+                try {
+                  const newReview: Review = {
+                    userId: authUser.uid,
+                    rating,
+                    comment: newComment.trim(),
+                    datetime: new Date().toLocaleDateString(),
+                  };
+                  const productRef = doc(db, 'products', product.productId);
+                  await updateDoc(productRef, {
+                    productReviews: arrayUnion(newReview)
+                  });
+                  setNewComment('');
+                  setRating(0);
+                } catch (err: any) {
+                  console.error('Review submission failed:', err);
+                  alert('Failed to submit review. Please try again.');
+                } finally {
+                  setReviewSubmitting(false);
+                }
+              }}>{reviewSubmitting ? 'Submitting...' : 'Submit Review'}</button>
             </div>
           </div>
         </section>
       </main>
 
+      {/* Contact Seller Modal */}
       {contactOpen && (
         <ContactSellerModal product={product} onClose={() => setContactOpen(false)} />
       )}

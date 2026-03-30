@@ -11,10 +11,10 @@ interface ProtectedRouteProps {
 
 /**
  * Higher-Order Component for Role-Based Access Control (RBAC).
- * Handles authentication checks and role-specific redirection logic.
+ * Handles authentication checks, generic onboarding interception, and role-specific redirection.
  */
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
-  const { user, loading } = useAuth();
+  const { user, buyerData, loading, isProfileComplete } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -26,16 +26,43 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
     return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
   }
 
-  // 2. Role Check
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirect to their respective dashboards if they have their own but trying to access unauthorized one
-    const redirectPath = user.role === 'admin' 
-      ? ROUTES.ADMIN_DASHBOARD 
-      : (user.role === 'seller' ? ROUTES.SELLER_DASHBOARD : ROUTES.USER_PROFILE);
-      
-    return <Navigate to={redirectPath} replace />;
+  // 2. Generic Onboarding Constraint Flow (Buyer & Seller)
+  if (!isProfileComplete) {
+    let targetOnboarding = '/buyer-onboarding';
+    if (user.role === 'seller') {
+       targetOnboarding = '/seller-onboarding';
+    } else if (user.role === 'both') {
+       // If dual-mode, check which one is missing
+       targetOnboarding = !buyerData?.phone ? '/buyer-onboarding' : '/seller-onboarding';
+    }
+    
+    if (location.pathname !== targetOnboarding) {
+      return <Navigate to={targetOnboarding} replace />;
+    }
   }
 
-  // 3. Authenticated and Authorized
+  // If profile is complete but trying to access onboarding, force dashboard
+  if (isProfileComplete && (location.pathname === '/seller-onboarding' || location.pathname === '/buyer-onboarding')) {
+     const redirectPath = user.role === 'admin' 
+       ? ROUTES.ADMIN_DASHBOARD 
+       : (user.role === 'seller' ? ROUTES.SELLER_DASHBOARD : ROUTES.USER_PROFILE);
+     return <Navigate to={redirectPath} replace />;
+  }
+
+  // 3. System Role Check
+  if (allowedRoles) {
+    const isDualEligible = user.role === 'both' && (allowedRoles.includes('buyer') || allowedRoles.includes('seller'));
+    
+    if (!allowedRoles.includes(user.role as any) && !isDualEligible) {
+      // Redirect to their respective dashboards if they have their own but trying to access unauthorized one
+      const redirectPath = user.role === 'admin' 
+        ? ROUTES.ADMIN_DASHBOARD 
+        : (user.role === 'both' || user.role === 'seller' ? ROUTES.SELLER_DASHBOARD : ROUTES.USER_PROFILE);
+        
+      return <Navigate to={redirectPath} replace />;
+    }
+  }
+
+  // 4. Authenticated and Authorized
   return <>{children}</>;
 };

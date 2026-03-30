@@ -22,10 +22,10 @@ const UserLayout: React.FC = () => {
 
   const menuItems = [
     { id: 'orders',    icon: <FiPackage />,  label: 'Orders & Tracking', path: ROUTES.USER_PROFILE },
-    { id: 'profile',   icon: <FiUser />,     label: 'Account Details',   path: '/profile/edit' },
-    { id: 'addresses', icon: <FiMapPin />,   label: 'Saved Addresses',   path: '/profile/addresses' },
-    { id: 'wishlist',  icon: <FiHeart />,    label: 'My Wishlist',       path: '/profile/wishlist' },
-    { id: 'settings',  icon: <FiSettings />, label: 'Preferences',       path: '/profile/settings' },
+    { id: 'profile',   icon: <FiUser />,     label: 'Account Details',   path: ROUTES.USER_PROFILE + '/edit' },
+    { id: 'addresses', icon: <FiMapPin />,   label: 'Saved Addresses',   path: ROUTES.USER_PROFILE + '/addresses' },
+    { id: 'wishlist',  icon: <FiHeart />,    label: 'My Wishlist',       path: ROUTES.USER_PROFILE + '/wishlist' },
+    { id: 'settings',  icon: <FiSettings />, label: 'Preferences',       path: ROUTES.USER_PROFILE + '/settings' },
   ];
 
   return (
@@ -56,6 +56,18 @@ const UserLayout: React.FC = () => {
                       {item.icon} {item.label}
                     </button>
                   ))}
+                  {user?.role === 'both' && (
+                     <>
+                        <div className={styles.navDivider} />
+                        <button 
+                           onClick={() => navigate(ROUTES.SELLER_DASHBOARD)}
+                           className={styles.navItem}
+                           style={{ color: '#2563eb', fontWeight: 700 }}
+                        >
+                           Store Administration
+                        </button>
+                     </>
+                  )}
                   <div className={styles.navDivider} />
                   <button 
                     onClick={async () => { await logout(); navigate(ROUTES.HOME); }}

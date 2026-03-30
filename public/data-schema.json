@@ -1,18 +1,22 @@
 {
   "users": [
     {
-      "UserId": "string",
-      "sellerProfile": "string (URL)",
-      "UserName": "string",
-      "UserEmail": "string (email)",
-      "UserNumber": "string (phone)",
-      "dateOfBirth": "string (YYYY-MM-DD)",
-      "Gender": "Male|Female|Other",
+      "uid": "string",
+      "email": "string (email)",
+      "displayName": "string",
+      "photoURL": "string (URL)",
+      "role": "admin|seller|buyer",
+      "phone": "string (phone, optional)",
+      "dateOfBirth": "string (YYYY-MM-DD, optional)",
+      "gender": "string (optional)",
+      "status": "active|suspended",
+      "createdAt": "string (ISO Date)",
+      "lastLogin": "string (ISO Date, optional)",
       "addresses": [
         {
           "type": "HOME|WORK|STORE|SHELTER",
           "name": "string",
-          "phone": "string (phone)",
+          "phone": "string",
           "pincode": "string",
           "locality": "string",
           "addressLine": "string",
@@ -24,9 +28,11 @@
         {
           "orderId": "string",
           "productId": "string",
-          "orderDate": "string (YYYY-MM-DD)",
-          "status": "DELIVERED|PROCESSING|CANCELLED|SHIPPED|PENDING|CONFIRMED",
-          "amount": "number"
+          "buyerId": "string",
+          "sellerId": "string",
+          "amount": "number",
+          "status": "PENDING|CONFIRMED|SHIPPED|DELIVERED|CANCELLED",
+          "orderDate": "string (ISO Date)"
         }
       ]
     }
@@ -34,27 +40,16 @@
   "sellers": [
     {
       "sellerId": "string",
-      "sellerProfile": "string (URL)",
       "sellerName": "string",
+      "shopName": "string",
+      "sellerProfile": "string (URL)",
+      "sellerLocation": "string",
       "sellerEmail": "string (email)",
       "sellerNumber": "string (phone)",
-      "sellerCertificate": "string",
-      "sellerLocation": "string",
+      "sellerCertificateUrl": "string (URL)",
+      "shopPhotoUrls": ["string (URL)"],
       "productIds": ["string"],
-      "dateOfBirth": "string (YYYY-MM-DD)",
-      "Gender": "Male|Female|Other",
-      "addresses": [
-        {
-          "type": "STORE|SHELTER",
-          "name": "string",
-          "phone": "string (phone)",
-          "pincode": "string",
-          "locality": "string",
-          "addressLine": "string",
-          "city": "string",
-          "state": "string"
-        }
-      ],
+      "status": "onboarding|pending|verified|rejected",
       "analytics": {
         "totalSales": "number",
         "revenue": "number",
@@ -68,24 +63,25 @@
   "products": [
     {
       "productId": "string",
-      "productCategory": "Pets|Toys",
-      "productType": "Dogs|Cats|Birds|Fish|Small Pets",
-      "productSubCategory": "string",
-      "productDescription": "string",
-      "productAge": "string",
-      "productGender": "Male|Female|Pair|Universal",
+      "sellerId": "string",
       "productPrice": "number",
+      "productCategory": "string",
+      "productSubCategory": "string",
+      "productType": "string",
+      "productAge": "string",
+      "productGender": "string",
       "productMedia": ["string (URL)"],
-      "productVaccinated": "boolean",
-      "productIsPair": "boolean",
-      "oldSalesCount": "number",
-      "newSalesCount": "number",
+      "productVaccinated": "boolean (optional)",
+      "productIsPair": "boolean (optional)",
+      "productDescription": "string (optional)",
+      "status": "PENDING|APPROVED|REJECTED|SOLD",
+      "newSalesCount": "number (optional)",
       "productReviews": [
         {
           "userId": "string",
+          "rating": "number (1-5)",
           "comment": "string",
-          "datetime": "string (YYYY-MM-DD HH:MM)",
-          "rating": "number (1-5)"
+          "datetime": "string (ISO Date)"
         }
       ]
     }

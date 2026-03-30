@@ -1,23 +1,24 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup, 
-  signOut, 
-  updateProfile as firebaseUpdateProfile
-} from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { auth, db, googleProvider } from '@/services/firebase/config';
-import type { User } from '@/types';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/services/firebase/config';
+import { AuthService } from '@/services/api/AuthService';
+import type { User, Seller, Buyer } from '@/types';
 
 interface AuthContextType {
   user: User | null;
+  sellerData: Seller | null;
+  buyerData: Buyer | null;
   loading: boolean;
+  role: 'admin' | 'buyer' | 'seller' | 'both' | null;
+  isProfileComplete: boolean;
+  isSellerVerified: boolean;
   login: (email: string, pass: string) => Promise<User | null>;
   register: (email: string, pass: string, role: 'buyer' | 'seller') => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
-  loginWithGoogle: (role: 'buyer' | 'seller') => Promise<void>;
+  updateBuyerProfile: (data: Partial<Buyer>) => Promise<void>;
+  loginWithGoogle: (role: 'buyer' | 'seller') => Promise<{ user?: User | null; sellerStatus?: string; requiresConfirmation?: boolean; pendingUserData?: User }>;
+  upgradeToDualRole: (uid: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -25,118 +26,147 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
  * Global Authentication Context Provider.
- * Synchronizes Firebase Auth state with the application's User profile in Firestore.
+ * Abstracted to use AuthService for explicit separation of concerns.
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [sellerData, setSellerData] = useState<Seller | null>(null);
+  const [buyerData, setBuyerData] = useState<Buyer | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Derived State Configuration
+  const role = user?.role || null;
+  
+  // Profile completion determinant logic across roles
+  const isProfileComplete = React.useMemo(() => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (user.role === 'buyer') return !!buyerData?.phone;
+    if (user.role === 'seller') return sellerData?.status !== 'onboarding';
+    if (user.role === 'both') return !!buyerData?.phone && sellerData?.status !== 'onboarding';
+    return false;
+  }, [user, sellerData, buyerData]);
+
+  const isSellerVerified = sellerData?.status === 'verified';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // Fetch extended profile database document
-        const userRef = doc(db, 'users', firebaseUser.uid);
-        const userDoc = await getDoc(userRef);
-        
-        if (userDoc.exists()) {
-          setUser(userDoc.data() as User);
+      setLoading(true); // Ensure lockout while fetching
+      try {
+        if (firebaseUser) {
+          // Fetch extended profile database document
+          const userRef = doc(db, 'users', firebaseUser.uid);
+          const userDoc = await getDoc(userRef);
+          
+          if (userDoc.exists()) {
+            let userData = userDoc.data() as User;
+            setUser(userData);
+
+            // Conditional Deep Fetch for Merchant profiles
+            if (userData.role === 'seller' || userData.role === 'both') {
+              const sellerRef = doc(db, 'sellers', firebaseUser.uid);
+              const sellerDoc = await getDoc(sellerRef);
+              if (sellerDoc.exists()) {
+                let sData = sellerDoc.data() as Seller;
+                sData.productIds = sData.productIds || [];
+                sData.analytics = sData.analytics || { totalSales: 0, revenue: 0, storeViews: 0, conversion: 0, storeRating: 0, salesHistory: [] };
+                sData.status = sData.status || 'pending';
+                setSellerData(sData);
+              } else {
+                setSellerData(null);
+              }
+            } else {
+              setSellerData(null);
+            }
+
+            // Deep fetch for Buyer data
+            if (userData.role === 'buyer' || userData.role === 'both') {
+              const buyerRef = doc(db, 'buyers', firebaseUser.uid);
+              const buyerDoc = await getDoc(buyerRef);
+              if (buyerDoc.exists()) {
+                setBuyerData(buyerDoc.data() as Buyer);
+              } else {
+                setBuyerData(null);
+              }
+            } else {
+              setBuyerData(null);
+            }
+          } else {
+             // User deleted from firestore but session alive
+            setUser(null);
+            setSellerData(null);
+            setBuyerData(null);
+          }
         } else {
           setUser(null);
+          setSellerData(null);
+          setBuyerData(null);
         }
-      } else {
-        setUser(null);
+      } catch (err) {
+        console.error('Session Hydration Error:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
   const login = async (email: string, pass: string) => {
-    const result = await signInWithEmailAndPassword(auth, email, pass);
-    const userRef = doc(db, 'users', result.user.uid);
-    const userDoc = await getDoc(userRef);
-    if (userDoc.exists()) {
-      const userData = userDoc.data() as User;
-      setUser(userData);
-      return userData;
-    }
-    return null;
+    const userData = await AuthService.loginWithEmail(email, pass);
+    setUser(userData);
+    return userData;
   };
 
-  const register = async (email: string, pass: string, role: 'buyer' | 'seller') => {
-    const result = await createUserWithEmailAndPassword(auth, email, pass);
-    const userId = result.user.uid;
-    const initialProfile = {
-      uid: userId,
-      email: email,
-      role: role,
-      displayName: result.user.displayName || 'New User',
-      photoURL: result.user.photoURL || 'https://www.w3schools.com/howto/img_avatar.png',
-      joinDate: new Date().toISOString()
-    };
-    await setDoc(doc(db, 'users', userId), initialProfile);
-    setUser(initialProfile as User);
+  const register = async (email: string, pass: string, reqRole: 'buyer' | 'seller') => {
+    const userData = await AuthService.registerWithEmail(email, pass, reqRole);
+    setUser(userData);
   };
 
   const updateProfile = async (data: Partial<User>) => {
     if (!auth.currentUser) return;
-    const userRef = doc(db, 'users', auth.currentUser.uid);
-    await updateDoc(userRef, data);
-    
-    // Update firebase user if display name/photo changed
-    if (data.displayName || data.photoURL) {
-      await firebaseUpdateProfile(auth.currentUser, {
-        displayName: data.displayName,
-        photoURL: data.photoURL
-      });
-    }
-
+    await AuthService.updateUserInfo(auth.currentUser.uid, data);
     setUser(prev => prev ? { ...prev, ...data } : null);
   };
 
+  const updateBuyerProfile = async (data: Partial<Buyer>) => {
+    if (!auth.currentUser) return;
+    await AuthService.updateBuyerInfo(auth.currentUser.uid, data);
+    setBuyerData(prev => prev ? { ...prev, ...data } : null);
+  };
+
   const loginWithGoogle = async (requestedRole: 'buyer' | 'seller') => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const firebaseUser = result.user;
-      
-      const userRef = doc(db, 'users', firebaseUser.uid);
-      const userSnap = await getDoc(userRef);
-      
-      if (!userSnap.exists()) {
-        const initialProfile = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || '',
-          role: requestedRole,
-          displayName: firebaseUser.displayName || 'New User',
-          photoURL: firebaseUser.photoURL || 'https://www.w3schools.com/howto/img_avatar.png',
-          joinDate: new Date().toISOString()
-        };
-        await setDoc(userRef, initialProfile);
-        setUser(initialProfile as User);
-      } else {
-        const userData = userSnap.data() as User;
-        if (requestedRole === 'seller' && userData.role === 'buyer') {
-          await setDoc(userRef, { role: 'seller' }, { merge: true });
-          setUser({ ...userData, role: 'seller' });
-        } else {
-          setUser(userData);
-        }
-      }
-    } catch (error) {
-      console.error('Google Auth Error:', error);
-      throw error;
+    const response = await AuthService.loginWithGoogle(requestedRole);
+    if (response.requiresConfirmation) {
+       return response;
     }
+    const { user: userData, sellerData: sData, buyerData: bData } = response;
+    if (userData) setUser(userData);
+    if (sData) setSellerData(sData);
+    if (bData) setBuyerData(bData);
+    return { user: userData, sellerStatus: sData?.status };
+  };
+
+  const upgradeToDualRole = async (uid: string) => {
+    const { user: userData, sellerData: sData, buyerData: bData } = await AuthService.upgradeToDualRole(uid, buyerData?.phone);
+    setUser(userData);
+    setSellerData(sData);
+    setBuyerData(bData);
   };
 
   const logout = async () => {
-    await signOut(auth);
+    await AuthService.logout();
     localStorage.removeItem('anisell_user_details');
     setUser(null);
+    setSellerData(null);
+    setBuyerData(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, updateProfile, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ 
+       user, sellerData, buyerData, loading, role, isProfileComplete, isSellerVerified, 
+       login, register, updateProfile, updateBuyerProfile, loginWithGoogle, upgradeToDualRole, logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );

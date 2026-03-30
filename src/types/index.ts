@@ -21,20 +21,25 @@ export interface User {
   email: string;
   displayName: string;
   photoURL: string;
-  role: 'admin' | 'seller' | 'buyer';
+  role: 'admin' | 'seller' | 'buyer' | 'both';
+  createdAt?: string;
+  lastLogin?: string;
+}
+
+export interface Buyer {
+  buyerId: string;
   phone?: string;
   dateOfBirth?: string;
   gender?: string;
   addresses?: Address[];
   orders?: Order[];
-  createdAt?: string;
-  lastLogin?: string;
+  status?: 'active' | 'onboarding';
 }
 
 export interface Product {
   productId: string;
   sellerId: string;
-  sellerName: string;
+  sellerName?: string;
   sellerLocation?: string;
   productPrice: number;
   productCategory: string;
@@ -47,8 +52,9 @@ export interface Product {
   productVaccinated?: boolean;
   productIsPair?: boolean;
   productDescription?: string;
-  status: 'active' | 'pending' | 'sold';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SOLD';
   newSalesCount?: number;
+  rejectionReason?: string;
 }
 
 export interface Order {
@@ -57,18 +63,18 @@ export interface Order {
   buyerId: string;
   sellerId: string;
   amount: number;
-  status: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  status: 'PENDING' | 'PROCESSING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   orderDate: string;
 }
 
 export interface Seller {
   sellerId: string;
-  sellerName: string;
-  sellerProfile: string;
+  shopName: string;
   sellerLocation: string;
-  sellerEmail: string;
   sellerNumber: string;
   productIds: string[];
+  sellerCertificateUrl?: string;
+  shopPhotoUrls?: string[];
   analytics?: {
     totalSales: number;
     revenue: number;
@@ -77,6 +83,7 @@ export interface Seller {
     storeRating: number;
     salesHistory: number[];
   };
+  status?: 'onboarding' | 'pending' | 'verified' | 'rejected';
 }
 
 export interface Inquiry {

@@ -11,15 +11,15 @@ import { ROUTES } from '@/constants/routes';
  * User Profile Dashboard Content.
  * Orchestrates the customer-facing history view, leveraging the UserOrders 
  * feature to isolate purchase activity and fulfillment tracking.
- * Refactored to eliminate duplicate order list JSX by delegating to the feature-set.
+ * Fixed to read orders from buyerData (buyers collection) rather than user document.
  */
 const Profile: React.FC = () => {
-  const { user } = useAuth();
+  const { buyerData } = useAuth();
   const { products, loading: dataLoading } = useSearchData();
   const navigate = useNavigate();
 
-  // Resolve orders belonging to the authenticated user
-  const orders = user?.orders || [];
+  // Orders live in the buyers collection, not the users collection
+  const orders = buyerData?.orders || [];
 
   if (dataLoading) return <Loading fullScreen={false} />;
 
@@ -34,7 +34,7 @@ const Profile: React.FC = () => {
       <UserOrders 
         orders={orders as any} 
         products={products as any} 
-        onTrack={(id) => navigate(`/order/${id}`)}
+        onTrack={(id) => navigate(`/profile/order/${id}`)}
       />
 
       {/* 2. Secondary Discovery - Empty State Helper */}

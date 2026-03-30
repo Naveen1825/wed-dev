@@ -17,7 +17,7 @@ const SellerRegister: React.FC = () => {
 
   const handleStartOnboarding = () => {
     // Navigates to the combined Login/Register hub with the intent to register as a seller
-    navigate(ROUTES.LOGIN);
+    navigate(ROUTES.LOGIN, { state: { role: 'seller', isRegister: true, lockRole: true } });
   };
 
   return (

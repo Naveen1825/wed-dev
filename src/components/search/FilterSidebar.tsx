@@ -39,12 +39,12 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ resultsCount, isOpen, onC
       </div>
 
       <div className="filter-group">
-        <h3>Category</h3>
+        <h3>Product Category</h3>
         <div className="filter-options">
           <label className="filter-option">
             <input type="radio" name="category" defaultChecked />
             <span className="radio-custom"></span>
-            <span>All</span>
+            <span>All Types</span>
           </label>
           <label className="filter-option">
             <input type="radio" name="category" />
@@ -60,7 +60,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ resultsCount, isOpen, onC
       </div>
 
       <div className="filter-group">
-        <h3>Pet Type</h3>
+        <h3>Species</h3>
         <div className="filter-options">
           {['Dogs', 'Cats', 'Birds', 'Fish', 'Small Pets'].map(type => (
             <label key={type} className="filter-option">

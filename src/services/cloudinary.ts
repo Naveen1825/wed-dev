@@ -3,9 +3,10 @@
  * Variables are prefixed with 'CLOUNDNARY' as per .env.example typo to ensure compatibility.
  */
 
-const CLOUD_NAME = "deegjxrel"; // Provided in the user's CLOUDINARY_URL example
+const CLOUD_NAME = import.meta.env.VITE_CLOUNDNARY_API_CLOUD_NAME; // Provided in the user's CLOUDINARY_URL example
 const API_KEY = import.meta.env.VITE_CLOUNDNARY_API;
 const API_SECRET = import.meta.env.VITE_CLOUNDNARY_API_SECRET;
+const DEFAULT_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 /**
  * Generates a SHA-1 signature for Cloudinary signed uploads using Web Crypto API.
@@ -37,7 +38,7 @@ async function generateSignature(params: Record<string, string>, secret: string)
  * @param uploadPreset The upload preset name
  * @returns The secure URL of the uploaded resource
  */
-export const uploadToCloudinary = async (file: File, uploadPreset: string = "ml_default") => {
+export const uploadToCloudinary = async (file: File, uploadPreset: string = DEFAULT_PRESET) => {
   if (!API_KEY || !API_SECRET) {
     throw new Error("Cloudinary API Key or Secret is missing in environment variables.");
   }
@@ -61,7 +62,7 @@ export const uploadToCloudinary = async (file: File, uploadPreset: string = "ml_
     formData.append("signature", signature);
     formData.append("cloud_name", CLOUD_NAME);
 
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
       method: "POST",
       body: formData,
     });

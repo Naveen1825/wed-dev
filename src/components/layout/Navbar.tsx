@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { auth, db } from '../../services/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
+import { ROUTES } from '@/constants/routes';
 import type { User } from 'firebase/auth';
 
 const Navbar = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const location = useLocation();
 
   useEffect(() => {
     const unsubscribeAuth = auth?.onAuthStateChanged((user: User | null) => {
@@ -36,6 +38,8 @@ const Navbar = () => {
   const profileImage = userProfile?.photoURL || currentUser?.photoURL;
   const userInitial = (currentUser?.displayName || currentUser?.email || 'U').charAt(0).toUpperCase();
 
+  const isSellerRegisterPage = location.pathname === ROUTES.REGISTER;
+
   return (
     <div className="nav-wrapper">
       <nav className="nav">
@@ -47,12 +51,14 @@ const Navbar = () => {
           />
         </Link>
 
-        <div className="search">
-          <input type="text" placeholder="Search pets, breeds, accessories..." />
-          <Link to="/result">
-            <button>Search</button>
-          </Link>
-        </div>
+        {!isSellerRegisterPage && (
+          <div className="search">
+            <input type="text" placeholder="Search pets, breeds, accessories..." />
+            <Link to="/result">
+              <button>Search</button>
+            </Link>
+          </div>
+        )}
 
         {currentUser ? (
           // User is signed in - show profile

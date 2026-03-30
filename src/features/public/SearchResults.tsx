@@ -13,7 +13,7 @@ import './SearchResults.css';
  * Refactored to eliminate duplicate listing JSX by leveraging the Public ListingGrid feature.
  */
 const SearchResults: React.FC = () => {
-  const { products, loading } = useSearchData();
+  const { approvedProducts, loading } = useSearchData();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   if (loading) return <Loading fullScreen={true} />;
@@ -25,12 +25,12 @@ const SearchResults: React.FC = () => {
         <button className="mobile-filter-btn" onClick={() => setIsSidebarOpen(true)}>
           <FiFilter /> Filters & Sort
         </button>
-        <span className="results-count-mobile">{products.length} Listings</span>
+        <span className="results-count-mobile">{approvedProducts.length} Listings</span>
       </div>
 
       {/* Structured Discovery Tools */}
       <FilterSidebar 
-        resultsCount={products.length} 
+        resultsCount={approvedProducts.length} 
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
@@ -38,7 +38,7 @@ const SearchResults: React.FC = () => {
       {/* Dynamic Results Grid - Unified Grid Feature */}
       <main className="search-results-main">
         <ListingGrid 
-          products={products as any} 
+          products={approvedProducts as any} 
           columns={3}
           showEmpty={true}
         />

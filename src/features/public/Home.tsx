@@ -14,25 +14,25 @@ import "@/App.css";
  * Refactored to eliminate duplicate listing JSX by leveraging the Public ListingGrid feature.
  */
 const Home: React.FC = () => {
-  const { products, loading } = useSearchData();
+  const { approvedProducts, loading } = useSearchData();
 
   if (loading) return <Loading fullScreen={true} />;
 
   return (
     <div className="home-content">
       {/* 1. Specialized Browsing Experiences */}
-      <BreedBrowser products={products} />
+      <BreedBrowser products={approvedProducts} />
 
       {/* 2. Core Listing Discovery - Unified Grid Feature */}
       <ListingGrid 
-        products={products as any} 
+        products={approvedProducts as any} 
         title="Trending Pet Listings"
         subtitle="Explore the latest additions to the AniSell community."
         columns={4}
       />
 
       {/* 3. Social Proof and Verified Merchants */}
-      <TopSellingPets products={products} />
+      <TopSellingPets products={approvedProducts} />
 
       {/* 4. Strategic Platform Differentiators */}
       <TrustFeatures />

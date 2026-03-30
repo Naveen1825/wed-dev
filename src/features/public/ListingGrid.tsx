@@ -43,7 +43,7 @@ export const ListingGrid: React.FC<ListingGridProps> = ({
             <ProductCard 
               key={product.productId} 
               product={product as any} 
-              variant={columns === 4 ? 'standard' : 'compact'} 
+              showStatus={false}
             />
           ))}
         </div>

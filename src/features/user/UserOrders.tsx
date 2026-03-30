@@ -27,7 +27,9 @@ export const UserOrders: React.FC<UserOrdersProps> = ({
           {orders.map(order => {
              const product = products.find(p => p.productId === order.productId);
              const variant = order.status === 'DELIVERED' ? 'success' : 
-                            order.status === 'CANCELLED' ? 'error' : 'primary';
+                            order.status === 'CANCELLED' ? 'error' : 
+                            order.status === 'SHIPPED' ? 'primary' :
+                            order.status === 'PROCESSING' ? 'warning' : 'neutral';
 
              return (
                <div key={order.orderId} className={styles.orderCard}>

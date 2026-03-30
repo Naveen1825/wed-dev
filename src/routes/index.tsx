@@ -14,6 +14,8 @@ import { publicRoutes } from './public.routes';
 const RootLayout = lazy(() => import('@/layouts/RootLayout'));
 const AdminLayout = lazy(() => import('@/layouts/AdminLayout'));
 const SellerLayout = lazy(() => import('@/layouts/SellerLayout'));
+const SellerOnboarding = lazy(() => import('@/features/seller/SellerOnboarding'));
+const BuyerOnboarding = lazy(() => import('@/features/user/BuyerOnboarding'));
 const UserLayout = lazy(() => import('@/layouts/UserLayout'));
 const Checkout = lazy(() => import('@/features/user/Checkout'));
 
@@ -60,11 +62,41 @@ const router = createBrowserRouter([
     children: sellerRoutes,
   },
 
-  // 4. --- Customer Experience (Account Management) ---
+  // 4. --- Seller Onboarding Identity (Strict Restriction intercept) ---
+  {
+    path: '/seller-onboarding',
+    element: (
+      <ProtectedRoute allowedRoles={['seller']}>
+        <Suspense fallback={<Loading />}>
+          <RootLayout />
+        </Suspense>
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <SellerOnboarding /> }
+    ]
+  },
+
+  // 4a. --- Buyer Onboarding Identity (Strict Restriction intercept) ---
+  {
+    path: '/buyer-onboarding',
+    element: (
+      <ProtectedRoute allowedRoles={['buyer']}>
+        <Suspense fallback={<Loading />}>
+          <RootLayout />
+        </Suspense>
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <BuyerOnboarding /> }
+    ]
+  },
+
+  // 5. --- Customer Experience (Account Management) ---
   {
     path: '/profile',
     element: (
-      <ProtectedRoute allowedRoles={['buyer', 'seller', 'admin']}>
+      <ProtectedRoute allowedRoles={['buyer']}>
         <Suspense fallback={<Loading />}>
           <UserLayout />
         </Suspense>
