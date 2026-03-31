@@ -8,6 +8,7 @@ import './App.css';
  * Orchestrates global providers (Auth, Theme, Query) and initializes the routing engine.
  */
 const App: React.FC = () => {
+  console.log('App Rendering Start');
   return (
     <AuthProvider>
        <AppRouter />
