@@ -28,11 +28,11 @@ const SearchResults: React.FC = () => {
     const isVaccinated = searchParams.get('vaccinated') === 'true';
 
     return approvedProducts.filter(p => {
-      const matchSearch = !query || 
-         p.productCategory.toLowerCase().includes(query) || 
-         p.productSubCategory.toLowerCase().includes(query) ||
-         p.productDescription?.toLowerCase().includes(query);
-      
+      const matchSearch = !query ||
+        p.productCategory.toLowerCase().includes(query) ||
+        p.productSubCategory.toLowerCase().includes(query) ||
+        p.productDescription?.toLowerCase().includes(query);
+
       const matchCategory = !category || category === 'All' || p.productType === category;
       const matchSpecies = species.length === 0 || species.includes(p.productCategory);
       const matchPrice = p.productPrice >= minPrice && (maxPrice === 0 || p.productPrice <= maxPrice);
@@ -65,8 +65,8 @@ const SearchResults: React.FC = () => {
       </div>
 
       {/* Structured Discovery Tools */}
-      <FilterSidebar 
-        resultsCount={filteredProducts.length} 
+      <FilterSidebar
+        resultsCount={filteredProducts.length}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onFilter={updateFilters}
@@ -81,8 +81,8 @@ const SearchResults: React.FC = () => {
 
       {/* Dynamic Results Grid - Unified Grid Feature */}
       <main className="search-results-main">
-        <ListingGrid 
-          products={filteredProducts as any} 
+        <ListingGrid
+          products={filteredProducts as any}
           columns={3}
           showEmpty={true}
         />

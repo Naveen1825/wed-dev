@@ -15,10 +15,11 @@ import styles from './AdminLayout.module.css';
 const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
-  const [isDesktop, setIsDesktop] = React.useState(window.innerWidth > 1024);
+  const [isDesktop, setIsDesktop] = React.useState(true);
 
   React.useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth > 1024);
+    handleResize(); // Initial check on mount
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);

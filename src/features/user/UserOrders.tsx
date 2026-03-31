@@ -42,7 +42,7 @@ export const UserOrders: React.FC<UserOrdersProps> = ({
                  {/* 2. Item Fulfillment Core */}
                  <div className={styles.cardBody}>
                     <img 
-                      src={product?.productMedia[0]} 
+                      src={product?.productMedia?.[0] || 'https://via.placeholder.com/150?text=Pet+Item'} 
                       alt="" 
                       className={styles.productImg} 
                     />
