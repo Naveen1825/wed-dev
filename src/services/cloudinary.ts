@@ -3,10 +3,10 @@
  * Variables are prefixed with 'CLOUNDNARY' as per .env.example typo to ensure compatibility.
  */
 
-const CLOUD_NAME = import.meta.env.VITE_CLOUNDNARY_API_CLOUD_NAME; // Provided in the user's CLOUDINARY_URL example
-const API_KEY = import.meta.env.VITE_CLOUNDNARY_API;
-const API_SECRET = import.meta.env.VITE_CLOUNDNARY_API_SECRET;
-const DEFAULT_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+const CLOUD_NAME = import.meta.env.CLOUNDNARY_API_CLOUD_NAME;
+const API_KEY = import.meta.env.CLOUNDNARY_API;
+const API_SECRET = import.meta.env.CLOUNDNARY_API_SECRET;
+const DEFAULT_PRESET = import.meta.env.CLOUDINARY_UPLOAD_PRESET;
 
 /**
  * Generates a SHA-1 signature for Cloudinary signed uploads using Web Crypto API.

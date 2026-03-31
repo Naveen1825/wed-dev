@@ -14,4 +14,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  envPrefix: ['VITE_', 'FIREBASE_', 'CLOUNDNARY_', 'CLOUDINARY_'],
 })
