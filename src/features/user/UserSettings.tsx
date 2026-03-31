@@ -1,16 +1,27 @@
-import React from 'react';
-import { FiBell, FiShield, FiSmartphone } from 'react-icons/fi';
+import { useOutletContext } from 'react-router-dom';
+import { FiBell, FiShield, FiSmartphone, FiMenu } from 'react-icons/fi';
 
 /**
  * User Preferences & Integrity Dashboard.
  * Orchestrates settings like notifications and privacy parameters.
  */
 const UserSettings: React.FC = () => {
+  const { toggleMenu } = useOutletContext<{ toggleMenu: () => void }>();
+
   return (
     <div className="user-profile-content">
-      <header style={{ marginBottom: '32px' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Account Preferences</h2>
-        <p style={{ color: '#64748b', fontSize: '15px' }}>Configure marketplace notifications, security, and global visibility.</p>
+      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Account Preferences</h2>
+          <p style={{ color: '#64748b', fontSize: '15px' }}>Configure marketplace notifications, security, and global visibility.</p>
+        </div>
+        <button 
+          className="mobileMenuTrigger" 
+          onClick={toggleMenu}
+          style={{ display: 'none', background: 'none', border: 'none', padding: '0', cursor: 'pointer' }}
+        >
+           <FiMenu size={24} color="#1e293b" />
+        </button>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>

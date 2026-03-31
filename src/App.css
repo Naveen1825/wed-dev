@@ -24,6 +24,27 @@
   height: 45px;
 }
 
+.mobileMenuTrigger {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .mobileMenuTrigger {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 8px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mobileMenuTrigger:hover {
+    background: #f1f5f9;
+  }
+}
+
 /* =========================
    SEARCH BAR
 ========================= */

@@ -15,6 +15,37 @@ import styles from './AdminLayout.module.css';
 const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
+  const [isDesktop, setIsDesktop] = React.useState(window.innerWidth > 1024);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth > 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (!isDesktop) {
+    return (
+      <div style={{
+        height: '100vh', display: 'flex', flexDirection: 'column', 
+        alignItems: 'center', justifyContent: 'center', padding: '40px',
+        textAlign: 'center', background: '#f8fafc', color: '#1e293b'
+      }}>
+        <div style={{ fontSize: '64px', marginBottom: '20px' }}>🖥️</div>
+        <h1 style={{ fontSize: '24px', fontWeight: 800 }}>Admin Workspace Restricted</h1>
+        <p style={{ marginTop: '16px', color: '#64748b', maxWidth: '400px' }}>
+          For security and data integrity, the Platform Governance Hub is exclusive to desktop systems. 
+          Please switch to a laptop or workstation to manage the AniSell ecosystem.
+        </p>
+        <button 
+          className="button-base button-primary" 
+          style={{ marginTop: '30px' }}
+          onClick={() => window.location.href = '/'}
+        >
+          Return to Marketplace
+        </button>
+      </div>
+    );
+  }
 
   const navItems = [
     { path: '/admin', icon: <FiGrid />, label: 'Overview' },

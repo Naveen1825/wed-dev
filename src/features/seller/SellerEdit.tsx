@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { FiEdit3 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
+import { useOutletContext } from 'react-router-dom';
+import { FiEdit3, FiMenu } from 'react-icons/fi';
 import { ProfileSharedFields } from '@/components/common/ProfileSharedFields';
 import { Input } from '@/components/ui/Input';
 import { AuthService } from '@/services/api/AuthService';
@@ -10,6 +11,7 @@ import { AuthService } from '@/services/api/AuthService';
  * Manages store branding, contact logic, and global operation details.
  */
 const SellerEdit: React.FC = () => {
+  const { toggleMenu } = useOutletContext<{ toggleMenu: () => void }>();
   const { user, sellerData, buyerData, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -122,11 +124,19 @@ const SellerEdit: React.FC = () => {
 
   return (
     <div className="seller-dashboard-content">
-      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Store Profile</h2>
-          <p style={{ color: '#64748b', fontSize: '15px' }}>Configure your storefront identity and core operational details.</p>
+      <header style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '8px' }}>
+           <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b' }}>Store Profile</h2>
+           <button 
+             className="mobileMenuTrigger" 
+             onClick={toggleMenu}
+             style={{ display: 'none', background: 'none', border: 'none', padding: '0', cursor: 'pointer' }}
+           >
+              <FiMenu size={24} color="#1e293b" />
+           </button>
         </div>
+        <p style={{ color: '#64748b', fontSize: '15px', marginBottom: '16px' }}>Configure your storefront identity and core operational details.</p>
+        
         {!isEditing && (
           <button 
              onClick={() => setIsEditing(true)}

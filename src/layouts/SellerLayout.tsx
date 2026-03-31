@@ -28,6 +28,8 @@ const SellerLayout: React.FC = () => {
     { id: 'settings',     icon: <FiSettings />,  label: 'Merchant Settings', path: ROUTES.SELLER_DASHBOARD + '/settings' },
   ];
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
   return (
     <div className={styles.layout}>
       <Navbar />
@@ -35,8 +37,13 @@ const SellerLayout: React.FC = () => {
       <main className={styles.main}>
         <div className={styles.container}>
           
-          {/* 1. Portal Workspace Sidebar */}
-          <aside className={styles.sidebarWrapper}>
+          {/* 1. Portal Workspace Sidebar (Slide Bar for Mobile) */}
+          <div 
+            className={`${styles.sidebarOverlay} ${isMobileMenuOpen ? styles.overlayActive : ''}`}
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+
+          <aside className={`${styles.sidebarWrapper} ${isMobileMenuOpen ? styles.wrapperActive : ''}`}>
             <div className={styles.sidebar}>
                <div className={styles.profileSection}>
                   <img src={user?.photoURL || 'https://www.w3schools.com/howto/img_avatar.png'} alt="" className={styles.avatar} />
@@ -50,7 +57,10 @@ const SellerLayout: React.FC = () => {
                   {menuItems.map(item => (
                     <button
                       key={item.id}
-                      onClick={() => navigate(item.path)}
+                      onClick={() => {
+                        navigate(item.path);
+                        setIsMobileMenuOpen(false);
+                      }}
                       className={`${styles.navItem} ${location.pathname === item.path ? styles.navItemActive : ''}`}
                     >
                       {item.icon} {item.label}
@@ -60,7 +70,10 @@ const SellerLayout: React.FC = () => {
                      <>
                         <div className={styles.navDivider} />
                         <button 
-                           onClick={() => navigate(ROUTES.USER_PROFILE)}
+                           onClick={() => {
+                              navigate(ROUTES.USER_PROFILE);
+                              setIsMobileMenuOpen(false);
+                           }}
                            className={styles.navItem}
                            style={{ color: '#2563eb', fontWeight: 700 }}
                         >
@@ -81,7 +94,7 @@ const SellerLayout: React.FC = () => {
 
           {/* 2. Feature Orchestration Outlet */}
           <section className={styles.content}>
-             <Outlet />
+             <Outlet context={{ toggleMenu: () => setIsMobileMenuOpen(true) }} />
           </section>
         </div>
       </main>

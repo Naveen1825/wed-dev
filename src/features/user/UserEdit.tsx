@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { FiEdit3 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import { ProfileSharedFields } from '@/components/common/ProfileSharedFields';
+import { useOutletContext } from 'react-router-dom';
+import { FiEdit3, FiMenu } from 'react-icons/fi';
 
 /**
  * Account Details Discovery Hub.
@@ -9,6 +10,7 @@ import { ProfileSharedFields } from '@/components/common/ProfileSharedFields';
  */
 const UserEdit: React.FC = () => {
   const { user, buyerData, updateBuyerProfile, updateProfile } = useAuth();
+  const { toggleMenu } = useOutletContext<{ toggleMenu: () => void }>();
   const [isEditing, setIsEditing] = useState(false);
   
   const initialFormState = {
@@ -98,11 +100,19 @@ const UserEdit: React.FC = () => {
 
   return (
     <div className="user-profile-content">
-      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Account Details</h2>
-          <p style={{ color: '#64748b', fontSize: '15px' }}>Manage your personal identity information and contact details.</p>
+      <header style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+           <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Account Details</h2>
+           <button 
+             className="mobileMenuTrigger" 
+             onClick={toggleMenu}
+             style={{ display: 'none', background: 'none', border: 'none', padding: '0', cursor: 'pointer' }}
+           >
+              <FiMenu size={24} color="#1e293b" />
+           </button>
         </div>
+        <p style={{ color: '#64748b', fontSize: '15px', marginBottom: '16px' }}>Manage your personal identity information and contact details.</p>
+        
         {!isEditing && (
           <button 
              onClick={() => setIsEditing(true)}

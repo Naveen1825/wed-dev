@@ -49,3 +49,24 @@
   font-weight: 800;
   color: var(--color-text-main);
 }
+
+@media (max-width: 768px) {
+  .card {
+    padding: var(--spacing-4);
+    gap: var(--spacing-3);
+  }
+
+  .iconWrapper {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .value {
+    font-size: var(--font-size-xl);
+  }
+
+  .label {
+    font-size: 10px;
+  }
+}

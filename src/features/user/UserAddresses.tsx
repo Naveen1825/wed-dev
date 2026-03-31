@@ -1,21 +1,31 @@
-import React from 'react';
-import { FiMapPin, FiPlus } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
+import { useOutletContext } from 'react-router-dom';
+import { FiMapPin, FiPlus, FiMenu } from 'react-icons/fi';
 
 /**
  * Saved Addresses Management Hub.
  * Isolates the logistics and delivery location tracking logic from the main profile.
  */
 const UserAddresses: React.FC = () => {
+  const { toggleMenu } = useOutletContext<{ toggleMenu: () => void }>();
   const { buyerData } = useAuth();
   const addresses = buyerData?.addresses || [];
 
   return (
     <div className="user-profile-content">
-      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Saved Addresses</h2>
-          <p style={{ color: '#64748b', fontSize: '15px' }}>Manage your delivery locations for faster checkout experiences.</p>
+      <header style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '16px' }}>
+           <div>
+             <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Saved Addresses</h2>
+             <p style={{ color: '#64748b', fontSize: '15px' }}>Manage your delivery locations for faster checkout experiences.</p>
+           </div>
+           <button 
+             className="mobileMenuTrigger" 
+             onClick={toggleMenu}
+             style={{ display: 'none', background: 'none', border: 'none', padding: '0', cursor: 'pointer' }}
+           >
+              <FiMenu size={24} color="#1e293b" />
+           </button>
         </div>
         <button className="button-base button-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <FiPlus /> Add New Location

@@ -1,16 +1,27 @@
-import React from 'react';
-import { FiCreditCard, FiBell, FiShield } from 'react-icons/fi';
+import { useOutletContext } from 'react-router-dom';
+import { FiCreditCard, FiBell, FiShield, FiMenu } from 'react-icons/fi';
 
 /**
  * Merchant Operations Settings.
  * Central registry for payment payouts, business notification rules, and structural security.
  */
 const SellerSettings: React.FC = () => {
+  const { toggleMenu } = useOutletContext<{ toggleMenu: () => void }>();
+
   return (
     <div className="seller-dashboard-content">
-      <header style={{ marginBottom: '32px' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Merchant Settings</h2>
-        <p style={{ color: '#64748b', fontSize: '15px' }}>Configure bank routing, notification frequency, and store privacy parameters.</p>
+      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Merchant Settings</h2>
+          <p style={{ color: '#64748b', fontSize: '15px' }}>Configure bank routing, notification frequency, and store privacy parameters.</p>
+        </div>
+        <button 
+          className="mobileMenuTrigger" 
+          onClick={toggleMenu}
+          style={{ display: 'none', background: 'none', border: 'none', padding: '0', cursor: 'pointer' }}
+        >
+           <FiMenu size={24} color="#1e293b" />
+        </button>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>

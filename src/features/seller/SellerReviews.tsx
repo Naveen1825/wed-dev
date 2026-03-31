@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { FiStar } from 'react-icons/fi';
+import { useOutletContext } from 'react-router-dom';
+import { FiStar, FiMenu } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import { useSearchData } from '@/hooks/useSearchData';
 import { Loading } from '@/components/common/Loading';
@@ -9,6 +10,7 @@ import { Loading } from '@/components/common/Loading';
  * Now fetches real reviews from productReviews in Firestore products.
  */
 const SellerReviews: React.FC = () => {
+  const { toggleMenu } = useOutletContext<{ toggleMenu: () => void }>();
   const { user } = useAuth();
   const { products, users, loading } = useSearchData();
 
@@ -39,9 +41,18 @@ const SellerReviews: React.FC = () => {
 
   return (
     <div className="seller-dashboard-content">
-      <header style={{ marginBottom: '32px' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Customer Reviews</h2>
-        <p style={{ color: '#64748b', fontSize: '15px' }}>Analyze feedback and build trust with your marketplace participants.</p>
+      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Customer Reviews</h2>
+          <p style={{ color: '#64748b', fontSize: '15px' }}>Analyze feedback and build trust with your marketplace participants.</p>
+        </div>
+        <button 
+          className="mobileMenuTrigger" 
+          onClick={toggleMenu}
+          style={{ display: 'none', background: 'none', border: 'none', padding: '0', cursor: 'pointer' }}
+        >
+           <FiMenu size={24} color="#1e293b" />
+        </button>
       </header>
 
       {/* Review Summary Stats */}

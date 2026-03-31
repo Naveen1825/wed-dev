@@ -5,9 +5,30 @@ interface FilterSidebarProps {
   resultsCount: number;
   isOpen: boolean;
   onClose: () => void;
+  onFilter: (key: string, value: any) => void;
+  currentFilters: {
+    category: string;
+    species: string[];
+    min: string;
+    max: string;
+    vaccinated: boolean;
+  };
 }
 
-const FilterSidebar: React.FC<FilterSidebarProps> = ({ resultsCount, isOpen, onClose }) => {
+const FilterSidebar: React.FC<FilterSidebarProps> = ({ 
+  resultsCount, 
+  isOpen, 
+  onClose,
+  onFilter,
+  currentFilters
+}) => {
+  const handleSpeciesChange = (species: string) => {
+    const newSpecies = currentFilters.species.includes(species)
+      ? currentFilters.species.filter(s => s !== species)
+      : [...currentFilters.species, species];
+    onFilter('species', newSpecies.join(','));
+  };
+
   return (
     <>
       <div 
@@ -24,49 +45,38 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ resultsCount, isOpen, onC
             <span className="sidebar-results-count">{resultsCount} Listings</span>
           </div>
         </header>
-      
-      {/* Moved Sort here */}
-      <div className="filter-group">
-        <h3>Sort By</h3>
-        <div className="filter-options">
-          <select className="sidebar-sort-select" defaultValue="new">
-            <option value="new">New Listings</option>
-            <option value="low-high">Price: Low to High</option>
-            <option value="high-low">Price: High to Low</option>
-            <option value="popularity">Popularity</option>
-          </select>
-        </div>
-      </div>
 
+      {/* Structured Discovery Tools */}
       <div className="filter-group">
         <h3>Product Category</h3>
         <div className="filter-options">
-          <label className="filter-option">
-            <input type="radio" name="category" defaultChecked />
-            <span className="radio-custom"></span>
-            <span>All Types</span>
-          </label>
-          <label className="filter-option">
-            <input type="radio" name="category" />
-            <span className="radio-custom"></span>
-            <span>Pets</span>
-          </label>
-          <label className="filter-option">
-            <input type="radio" name="category" />
-            <span className="radio-custom"></span>
-            <span>Toys & Accessories</span>
-          </label>
+          {['All', 'Pets', 'Accessories'].map(cat => (
+            <label key={cat} className="filter-option">
+              <input 
+                type="radio" 
+                name="category" 
+                checked={currentFilters.category === cat}
+                onChange={() => onFilter('category', cat)}
+              />
+              <span className="radio-custom"></span>
+              <span>{cat}</span>
+            </label>
+          ))}
         </div>
       </div>
 
       <div className="filter-group">
         <h3>Species</h3>
         <div className="filter-options">
-          {['Dogs', 'Cats', 'Birds', 'Fish', 'Small Pets'].map(type => (
+          {['Dog', 'Cat', 'Bird', 'Fish', 'Rabbit'].map(type => (
             <label key={type} className="filter-option">
-              <input type="checkbox" />
+              <input 
+                type="checkbox" 
+                checked={currentFilters.species.includes(type)}
+                onChange={() => handleSpeciesChange(type)}
+              />
               <span className="checkbox-custom"></span>
-              <span>{type}</span>
+              <span>{type}s</span>
             </label>
           ))}
         </div>
@@ -77,25 +87,24 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ resultsCount, isOpen, onC
         <div className="price-inputs">
           <div className="price-input-wrapper">
              <span>₹</span>
-             <input type="number" placeholder="Min" className="price-input" />
+             <input 
+               type="number" 
+               placeholder="Min" 
+               className="price-input" 
+               value={currentFilters.min}
+               onChange={(e) => onFilter('min', e.target.value)}
+             />
           </div>
           <div className="price-input-wrapper">
              <span>₹</span>
-             <input type="number" placeholder="Max" className="price-input" />
+             <input 
+               type="number" 
+               placeholder="Max" 
+               className="price-input" 
+               value={currentFilters.max}
+               onChange={(e) => onFilter('max', e.target.value)}
+             />
           </div>
-        </div>
-      </div>
-
-      <div className="filter-group">
-        <h3>Location</h3>
-        <div className="filter-options">
-          {['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Pune'].map(city => (
-            <label key={city} className="filter-option">
-              <input type="checkbox" />
-              <span className="checkbox-custom"></span>
-              <span>{city}</span>
-            </label>
-          ))}
         </div>
       </div>
 
@@ -103,12 +112,32 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ resultsCount, isOpen, onC
         <h3>Vaccination</h3>
         <div className="filter-options">
           <label className="filter-option">
-            <input type="checkbox" />
+            <input 
+              type="checkbox" 
+              checked={currentFilters.vaccinated}
+              onChange={(e) => onFilter('vaccinated', e.target.checked ? 'true' : 'false')}
+            />
             <span className="checkbox-custom"></span>
             <span>Vaccinated Only</span>
           </label>
         </div>
       </div>
+
+      <button 
+        className="button-base button-outline" 
+        style={{ width: '100%', marginTop: '20px' }}
+        onClick={() => {
+           // Clear all filters but keep search query if any
+           onFilter('category', '');
+           onFilter('species', '');
+           onFilter('min', '');
+           onFilter('max', '');
+           onFilter('vaccinated', '');
+        }}
+      >
+        Reset All Discovery Tools
+      </button>
+
       </aside>
     </>
   );

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { auth, db } from '../../services/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { ROUTES } from '@/constants/routes';
@@ -40,6 +40,24 @@ const Navbar = () => {
 
   const isSellerRegisterPage = location.pathname === ROUTES.REGISTER;
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`${ROUTES.MARKETPLACE}?q=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate(ROUTES.MARKETPLACE);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <div className="nav-wrapper">
       <nav className="nav">
@@ -52,12 +70,16 @@ const Navbar = () => {
         </Link>
 
         {!isSellerRegisterPage && (
-          <div className="search">
-            <input type="text" placeholder="Search pets, breeds, accessories..." />
-            <Link to="/result">
-              <button>Search</button>
-            </Link>
-          </div>
+          <form className="search" onSubmit={handleSearch}>
+            <input 
+              type="text" 
+              placeholder="Search pets, breeds, accessories..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleKeyPress}
+            />
+            <button type="submit">Search</button>
+          </form>
         )}
 
         {currentUser ? (

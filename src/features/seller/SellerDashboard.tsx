@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useSearchData } from '@/hooks/useSearchData';
 import { SellerHome } from '@/features/seller/SellerHome';
@@ -7,10 +7,11 @@ import { SellerListings } from '@/features/seller/SellerListings';
 import { Loading } from '@/components/common/Loading';
 import { ROUTES } from '@/constants/routes';
 import { ProductForm } from '@/features/seller/ProductForm';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiMenu } from 'react-icons/fi';
 import { doc, deleteDoc, updateDoc, arrayRemove } from 'firebase/firestore';
 import { db } from '@/services/firebase/config';
 import type { Seller, Product } from '@/types';
+import styles from './SellerDashboard.module.css';
 
 /**
  * Seller Dashboard Performance & Operations.
@@ -19,6 +20,7 @@ import type { Seller, Product } from '@/types';
  * Now passes real Firestore orders to SellerHome for analytics derivation.
  */
 const SellerProfile: React.FC = () => {
+  const { toggleMenu } = useOutletContext<{ toggleMenu: () => void }>();
   const { user, sellerData, buyerData, isSellerVerified } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -74,24 +76,33 @@ const SellerProfile: React.FC = () => {
   if (!seller) return <div style={{ padding: '60px', textAlign: 'center' }}>Unable to resolve merchant credentials.</div>;
 
   return (
-    <div className="seller-dashboard-content">
-      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-           <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>Store Administration</h1>
-           <p style={{ color: '#64748b', fontSize: '15px' }}>Operation oversight and performance tracking for {seller.shopName}.</p>
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.headerInfo}>
+           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+             <h1>Store Administration</h1>
+             <button 
+               className={styles.mobileMenuTrigger} 
+               onClick={toggleMenu}
+               style={{ display: 'none', background: 'none', border: 'none', padding: '0', cursor: 'pointer' }}
+             >
+               <FiMenu size={24} color="#1e293b" />
+             </button>
+           </div>
+           <p>Operation oversight and performance tracking for {seller.shopName}.</p>
         </div>
         
         {/* Portal Feature Toggles */}
-        <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '10px' }}>
+        <div className={styles.toggles}>
            <button 
              onClick={() => navigate(ROUTES.SELLER_DASHBOARD)}
-             style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 600, background: activeTab === 'overview' ? '#fff' : 'transparent', color: activeTab === 'overview' ? '#2563eb' : '#64748b', cursor: 'pointer', boxShadow: activeTab === 'overview' ? '0 1px 3px rgba(0,0,0,0.05)' : 'none' }}
+             className={`${styles.toggleBtn} ${activeTab === 'overview' ? styles.toggleBtnActive : styles.toggleBtnInactive}`}
            >
              Performance Overview
            </button>
            <button 
              onClick={() => navigate(ROUTES.SELLER_DASHBOARD + '/products')}
-             style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 600, background: activeTab === 'listings' ? '#fff' : 'transparent', color: activeTab === 'listings' ? '#2563eb' : '#64748b', cursor: 'pointer', boxShadow: activeTab === 'listings' ? '0 1px 3px rgba(0,0,0,0.05)' : 'none' }}
+             className={`${styles.toggleBtn} ${activeTab === 'listings' ? styles.toggleBtnActive : styles.toggleBtnInactive}`}
            >
              Inventory Tracking
            </button>
