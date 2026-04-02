@@ -3,7 +3,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { Loading } from '@/components/common/Loading';
 import { ProtectedRoute } from '@/routes/ProtectedRoute';
 import { ROUTES } from '@/constants/routes';
-import { isAdminSubdomain, getAdminSubdomainUrl } from '@/utils/subdomain';
+import { isAdminSubdomain, getAdminSubdomainUrl, isVercel } from '@/utils/subdomain';
 
 // --- Specialized Route Configs ---
 import { adminRoutes } from './admin.routes';
@@ -105,7 +105,7 @@ const mainRouter = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <Navigate to={getAdminSubdomainUrl()} replace />,
+    element: isVercel() ? <Navigate to="/admin/profile" replace /> : <Navigate to={getAdminSubdomainUrl()} replace />,
   },
   {
     path: '*',
@@ -114,7 +114,7 @@ const mainRouter = createBrowserRouter([
 ]);
 
 // --- 2. DEDICATED ADMIN SUBDOMAIN ROUTER ---
-const adminRouter = createBrowserRouter([
+const createAdminRouter = (isVercelDeployment: boolean) => createBrowserRouter([
   {
     path: '/login',
     element: (
@@ -153,9 +153,12 @@ const adminRouter = createBrowserRouter([
     path: '*',
     element: <Navigate to="/" replace />,
   }
-]);
+], isVercelDeployment ? { basename: '/admin' } : {});
 
 export const AppRouter: React.FC = () => {
   const isAdm = isAdminSubdomain();
+  const onVercel = isVercel();
+  const adminRouter = React.useMemo(() => createAdminRouter(onVercel), [onVercel]);
+  
   return <RouterProvider router={isAdm ? adminRouter : mainRouter} />;
 };

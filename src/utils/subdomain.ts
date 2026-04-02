@@ -20,21 +20,34 @@ export const getSubdomain = (): string | null => {
   return null;
 };
 
-export const isAdminSubdomain = (): boolean => getSubdomain() === 'admin';
+export const isVercel = (): boolean => {
+  return window.location.hostname.endsWith('.vercel.app');
+};
+
+export const isAdminSubdomain = (): boolean => {
+  const sub = getSubdomain();
+  if (sub === 'admin') return true;
+  
+  // Fallback for Vercel deployments where nested subdomains aren't supported
+  if (isVercel() && window.location.pathname.startsWith('/admin')) {
+    return true;
+  }
+  
+  return false;
+};
 
 export const isAdminEmail = (email: string | null | undefined): boolean => {
    if (!email) return false;
-   // In a real app, this would be a secure backend check.
-   // Here we use a safe environment-based check as requested.
    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || 'admin@anisell.com').split(',');
    return adminEmails.includes(email);
 };
 
 export const getMainDomainUrl = (): string => {
    const protocol = window.location.protocol;
-   const host = window.location.host; // e.g. admin.localhost:3000
+   const host = window.location.host;
    
-   // If current domain has admin. prefix, remove it.
+   if (isVercel()) return `${protocol}//${host}/`;
+   
    const mainHost = host.replace(/^admin\./, '');
    return `${protocol}//${mainHost}`;
 };
@@ -43,6 +56,8 @@ export const getAdminSubdomainUrl = (): string => {
    const protocol = window.location.protocol;
    const host = window.location.host;
    
+   if (isVercel()) return `${protocol}//${host}/admin`;
+
    if (host.startsWith('admin.')) return `${protocol}//${host}`;
    return `${protocol}//admin.${host}`;
 };
