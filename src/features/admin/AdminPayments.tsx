@@ -11,7 +11,7 @@ import { FiDollarSign, FiPercent, FiTrendingUp } from 'react-icons/fi';
  * Isolates analytics into actionable payout routing and global financial tracing.
  */
 const AdminPayments: React.FC = () => {
-  const { sellers, orders, loading } = useSearchData();
+  const { sellers, orders, users, loading } = useSearchData();
 
   const financialCore = useMemo(() => {
     let globalRevenue = 0;
@@ -44,18 +44,23 @@ const AdminPayments: React.FC = () => {
     { 
       header: 'Economic Entity (Store)', 
       key: 'sellerName',
-      render: (s: any) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-           <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+      render: (s: any) => {
+        const user = users.find(u => u.uid === s.sellerId);
+        const avatarUrl = user?.photoURL || (s.shopPhotoUrls && s.shopPhotoUrls.length > 0 ? s.shopPhotoUrls[0] : 'https://via.placeholder.com/100?text=PS');
+        
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
               <img 
-                 src={(s.shopPhotoUrls && s.shopPhotoUrls.length > 0) ? s.shopPhotoUrls[0] : 'https://via.placeholder.com/100?text=Shop'} 
-                 alt="" 
-                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                src={avatarUrl} 
+                alt="" 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
               />
-           </div>
-           <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>{s.shopName || 'Merchant'}</div>
-        </div>
-      )
+            </div>
+            <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>{s.shopName || 'Merchant'}</div>
+          </div>
+        );
+      }
     },
     { 
       header: 'Gross Merchandise Volume (GMV)', 

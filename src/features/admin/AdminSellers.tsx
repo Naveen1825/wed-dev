@@ -15,7 +15,7 @@ import type { Seller } from '@/types';
  */
 const AdminSellers: React.FC = () => {
   const navigate = useNavigate();
-  const { sellers, orders, products, loading } = useSearchData();
+  const { sellers, orders, products, users, loading } = useSearchData();
   const [filter, setFilter] = useState<'all' | 'verified' | 'pending' | 'rejected'>('all');
   const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<string | null>(null);
@@ -24,6 +24,7 @@ const AdminSellers: React.FC = () => {
 
   // Reactive Seller Selection
   const currentSeller = sellers.find(s => s.sellerId === selectedSellerId);
+  const currentUser = currentSeller ? users.find(u => u.uid === currentSeller.sellerId) : null;
 
   // Dynamic Calculation Helper
   const getSellerStats = (sellerId: string) => {
@@ -59,18 +60,23 @@ const AdminSellers: React.FC = () => {
     { 
       header: 'Store Entity', 
       key: 'shopName',
-      render: (s: Seller) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-           <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+      render: (s: Seller) => {
+        const user = users.find(u => u.uid === s.sellerId);
+        const avatarUrl = user?.photoURL || (s.shopPhotoUrls && s.shopPhotoUrls.length > 0 ? s.shopPhotoUrls[0] : 'https://via.placeholder.com/100?text=PS');
+        
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
               <img 
-                 src={(s.shopPhotoUrls && s.shopPhotoUrls.length > 0) ? s.shopPhotoUrls[0] : 'https://via.placeholder.com/100?text=Shop'} 
-                 alt="" 
-                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                src={avatarUrl} 
+                alt="" 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
               />
-           </div>
-           <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>{s.shopName || 'Merchant'}</div>
-        </div>
-      )
+            </div>
+            <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>{s.shopName || 'Merchant'}</div>
+          </div>
+        );
+      }
     },
     {
       header: 'Contact',
@@ -147,14 +153,14 @@ const AdminSellers: React.FC = () => {
               </button>
               
               <div style={{ padding: '40px' }}>
-                <header style={{ display: 'flex', gap: '24px', marginBottom: '32px', borderBottom: '1px solid #f1f5f9', paddingBottom: '24px' }}>
-                   <div style={{ width: '80px', height: '80px', borderRadius: '20px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                      <img 
-                        src={(currentSeller.shopPhotoUrls && currentSeller.shopPhotoUrls.length > 0) ? currentSeller.shopPhotoUrls[0] : 'https://via.placeholder.com/100?text=Shop'} 
-                        alt="" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                      />
-                   </div>
+                 <header style={{ display: 'flex', gap: '24px', marginBottom: '32px', borderBottom: '1px solid #f1f5f9', paddingBottom: '24px' }}>
+                    <div style={{ width: '80px', height: '80px', borderRadius: '20px', border: '1px solid #e2e8f0', overflow: 'hidden', background: '#f8fafc' }}>
+                       <img 
+                         src={currentUser?.photoURL || (currentSeller.shopPhotoUrls && currentSeller.shopPhotoUrls.length > 0 ? currentSeller.shopPhotoUrls[0] : 'https://via.placeholder.com/100?text=PS')} 
+                         alt="" 
+                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                       />
+                    </div>
                    <div>
                       <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>{currentSeller.shopName}</h2>
                       <p style={{ color: '#64748b', fontSize: '13px', fontWeight: 600 }}>Merchant ID: {currentSeller.sellerId}</p>

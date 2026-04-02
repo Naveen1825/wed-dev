@@ -24,8 +24,8 @@ const Home: React.FC = () => {
       <BreedBrowser products={approvedProducts} />
 
       {/* 2. Core Listing Discovery - Unified Grid Feature */}
-      <ListingGrid 
-        products={approvedProducts as any} 
+      <ListingGrid
+        products={approvedProducts as any}
         title="Trending Pet Listings"
         subtitle="Explore the latest additions to the AniSell community."
         columns={4}
