@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useSearchData } from '@/hooks/useSearchData';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonProfile } from '@/components/ui/Skeleton';
 import { UserOrders } from '@/features/user/UserOrders';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
@@ -23,7 +23,11 @@ const Profile: React.FC = () => {
   // Orders live in the buyers collection, not the users collection
   const orders = buyerData?.orders || [];
 
-  if (dataLoading) return <Loading fullScreen={false} />;
+  if (dataLoading) return (
+     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px' }}>
+       <SkeletonProfile />
+     </div>
+  );
 
   return (
     <div className={styles.container}>

@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useSearchData } from '@/hooks/useSearchData';
 import { SellerHome } from '@/features/seller/SellerHome';
 import { SellerListings } from '@/features/seller/SellerListings';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonAnalytics, SkeletonTableRow } from '@/components/ui/Skeleton';
 import { ROUTES } from '@/constants/routes';
 import { ProductForm } from '@/features/seller/ProductForm';
 import { FiX, FiMenu } from 'react-icons/fi';
@@ -88,7 +88,20 @@ const SellerProfile: React.FC = () => {
     }).sort((a, b) => new Date(b.order.orderDate).getTime() - new Date(a.order.orderDate).getTime());
   }, [buyers, users, user, sellerProducts, products]);
 
-  if (globalLoading || isTransitioning) return <Loading fullScreen={false} message={isTransitioning ? "Fetching Inventory..." : "Synchronizing Platform..."} />;
+  if (globalLoading || isTransitioning) return (
+     <div className={styles.container}>
+        <header className={styles.header}>
+           <div style={{ width: '40%', height: '32px', background: '#f1f5f9', borderRadius: '8px', marginBottom: '12px' }} />
+           <div style={{ width: '25%', height: '18px', background: '#f1f5f9', borderRadius: '8px' }} />
+        </header>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '40px' }}>
+           {[...Array(4)].map((_, i) => <SkeletonAnalytics key={i} />)}
+        </div>
+        <div style={{ background: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+           {[...Array(5)].map((_, i) => <SkeletonTableRow key={i} columns={5} />)}
+        </div>
+     </div>
+  );
   if (!seller) return <div style={{ padding: '60px', textAlign: 'center' }}>Unable to resolve merchant credentials.</div>;
 
   return (

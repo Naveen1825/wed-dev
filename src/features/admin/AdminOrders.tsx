@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useSearchData } from '@/hooks/useSearchData';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonTableRow } from '@/components/ui/Skeleton';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { FiBox, FiCheck, FiTruck, FiXCircle, FiX } from 'react-icons/fi';
@@ -40,7 +40,11 @@ const AdminOrders: React.FC = () => {
     });
   }, [buyers, users, products, sellers]);
 
-  if (loading) return <Loading fullScreen={false} />;
+  if (loading) return (
+     <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+        {[...Array(5)].map((_, i) => <SkeletonTableRow key={i} columns={5} />)}
+     </div>
+  );
 
   const filteredOrders = allOrders.filter(o => filter === 'All' || o.status === filter);
 

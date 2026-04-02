@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSearchData } from '@/hooks/useSearchData';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonProfile } from '@/components/ui/Skeleton';
 import { Badge } from '@/components/ui/Badge';
 import { FiArrowLeft, FiX } from 'react-icons/fi';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -17,7 +17,11 @@ const AdminUserDossier: React.FC = () => {
   const { users, sellers, buyers, orders, products, loading } = useSearchData();
   const [activeMedia, setActiveMedia] = React.useState<string | null>(null);
 
-  if (loading) return <Loading fullScreen={false} />;
+  if (loading) return (
+     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px' }}>
+       <SkeletonProfile />
+     </div>
+  );
 
   const user = users.find(u => u.uid === id);
   const sellerData = sellers.find(s => s.sellerId === id);

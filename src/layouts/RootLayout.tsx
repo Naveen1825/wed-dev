@@ -1,21 +1,24 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
 /**
  * Platform Root Layout.
  * Orchestrates the primary public experience with a consistent Navbar and Footer.
- * Used for the Home page, Marketplace, and Product detail views.
+ * Conditionally suppresses navigation components for focused entry points like Login.
  */
 const RootLayout: React.FC = () => {
+  const location = useLocation();
+  const showNav = location.pathname !== '/login';
+
   return (
     <div className="platform-root-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-       <Navbar />
+       {showNav && <Navbar />}
        <main style={{ flex: 1 }}>
           <Outlet />
        </main>
-       <Footer />
+       {showNav && <Footer />}
     </div>
   );
 };

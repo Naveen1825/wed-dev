@@ -64,7 +64,7 @@ const SellerRegister: React.FC = () => {
               <div className="hero-visual-side">
                  <div className="mockup-frame float-animation">
                     <img 
-                      src="https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=2670&auto=format&fit=crop" 
+                      src="/seller_dashboard.png" 
                       alt="Seller Dashboard Preview" 
                       className="mockup-img"
                     />

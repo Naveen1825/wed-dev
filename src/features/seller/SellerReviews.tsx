@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { FiStar, FiMenu } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import { useSearchData } from '@/hooks/useSearchData';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonTableRow } from '@/components/ui/Skeleton';
 
 /**
  * Merchant Review Orchestrator.
@@ -37,7 +37,11 @@ const SellerReviews: React.FC = () => {
     return Math.round(allReviews.reduce((acc, r) => acc + r.rating, 0) / allReviews.length * 10) / 10;
   }, [allReviews]);
 
-  if (loading) return <Loading fullScreen={false} />;
+  if (loading) return (
+     <div style={{ background: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+        {[...Array(5)].map((_, i) => <SkeletonTableRow key={i} columns={4} />)}
+     </div>
+  );
 
   return (
     <div className="seller-dashboard-content">

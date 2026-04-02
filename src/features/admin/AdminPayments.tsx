@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useSearchData } from '@/hooks/useSearchData';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonTableRow } from '@/components/ui/Skeleton';
 import { Table } from '@/components/ui/Table';
 import { StatCard } from '@/components/ui/StatCard';
 import { Badge } from '@/components/ui/Badge';
@@ -38,7 +38,11 @@ const AdminPayments: React.FC = () => {
     return { globalRevenue, globalCommission, payouts };
   }, [sellers, orders]);
 
-  if (loading) return <Loading fullScreen={false} />;
+  if (loading) return (
+     <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+        {[...Array(5)].map((_, i) => <SkeletonTableRow key={i} columns={5} />)}
+     </div>
+  );
 
   const payoutColumns = [
     { 

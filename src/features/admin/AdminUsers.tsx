@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSearchData } from '@/hooks/useSearchData';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonTableRow } from '@/components/ui/Skeleton';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { FiX } from 'react-icons/fi';
@@ -19,7 +19,11 @@ const AdminUsers: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<'all' | 'buyer' | 'seller' | 'admin'>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  if (loading) return <Loading fullScreen={false} />;
+  if (loading) return (
+     <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+        {[...Array(10)].map((_, i) => <SkeletonTableRow key={i} columns={4} />)}
+     </div>
+  );
 
   const filteredUsers = users.filter(user => 
     roleFilter === 'all' || user.role === roleFilter

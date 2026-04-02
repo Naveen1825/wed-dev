@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSearchData } from '@/hooks/useSearchData';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 import { ListingGrid } from '@/features/public/ListingGrid';
 import FilterSidebar from '@/components/search/FilterSidebar';
 import { FiFilter } from 'react-icons/fi';
@@ -52,7 +52,13 @@ const SearchResults: React.FC = () => {
     setSearchParams(params);
   };
 
-  if (loading) return <Loading fullScreen={true} />;
+  if (loading) return (
+     <div style={{ padding: '40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px' }}>
+           {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+     </div>
+  );
 
   return (
     <div className="search-page-container">

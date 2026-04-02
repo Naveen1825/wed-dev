@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useSearchData } from '@/hooks/useSearchData';
 import { AdminOverview } from '@/features/admin/AdminOverview';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonAnalytics, SkeletonTableRow } from '@/components/ui/Skeleton';
 import type { Product, Seller, User, Buyer } from '@/types';
 
 /**
@@ -40,7 +40,20 @@ const AdminDashboard: React.FC = () => {
     };
   }, [products, allOrders]);
 
-  if (loading) return <Loading fullScreen={false} />;
+  if (loading) return (
+     <div className="admin-dashboard-content">
+        <header style={{ marginBottom: '32px' }}>
+           <div style={{ width: '40%', height: '32px', background: '#f1f5f9', borderRadius: '8px', marginBottom: '12px' }} />
+           <div style={{ width: '25%', height: '18px', background: '#f1f5f9', borderRadius: '8px' }} />
+        </header>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '40px' }}>
+           {[...Array(4)].map((_, i) => <SkeletonAnalytics key={i} />)}
+        </div>
+        <div style={{ background: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+           {[...Array(5)].map((_, i) => <SkeletonTableRow key={i} columns={5} />)}
+        </div>
+     </div>
+  );
 
   return (
     <div className="admin-dashboard-content">

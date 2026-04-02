@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useSearchData } from '@/hooks/useSearchData';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonAnalytics } from '@/components/ui/Skeleton';
 import { FiTrendingUp, FiPieChart, FiBarChart2, FiShoppingCart } from 'react-icons/fi';
 import { StatCard } from '@/components/ui/StatCard';
 
@@ -52,7 +52,11 @@ const AdminAnalytics: React.FC = () => {
     };
   }, [products, sellers, users, buyers]);
 
-  if (loading) return <Loading fullScreen={false} />;
+  if (loading) return (
+     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
+        {[...Array(4)].map((_, i) => <SkeletonAnalytics key={i} />)}
+     </div>
+  );
 
   const maxDailyOrder = Math.max(...metrics.dailyOrders, 1);
 

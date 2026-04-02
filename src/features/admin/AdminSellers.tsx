@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSearchData } from '@/hooks/useSearchData';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonTableRow } from '@/components/ui/Skeleton';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { FiX } from 'react-icons/fi';
@@ -20,7 +20,11 @@ const AdminSellers: React.FC = () => {
   const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<string | null>(null);
 
-  if (loading) return <Loading fullScreen={false} />;
+  if (loading) return (
+     <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+        {[...Array(5)].map((_, i) => <SkeletonTableRow key={i} columns={6} />)}
+     </div>
+  );
 
   // Reactive Seller Selection
   const currentSeller = sellers.find(s => s.sellerId === selectedSellerId);

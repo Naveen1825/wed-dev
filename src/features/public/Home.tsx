@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSearchData } from '@/hooks/useSearchData';
-import { Loading } from '@/components/common/Loading';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 import { ListingGrid } from '@/features/public/ListingGrid';
 import BreedBrowser from "@/components/home/BreedBrowser"; // Will refactor to features/public next
 import TopSellingPets from "@/components/home/SellerGrid"; // Will refactor to features/public next
@@ -16,7 +16,13 @@ import "@/App.css";
 const Home: React.FC = () => {
   const { approvedProducts, loading } = useSearchData();
 
-  if (loading) return <Loading fullScreen={true} />;
+  if (loading) return (
+     <div style={{ padding: '40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px', maxWidth: '1440px', margin: '0 auto' }}>
+           {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+     </div>
+  );
 
   return (
     <div className="home-content">
