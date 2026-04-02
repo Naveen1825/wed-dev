@@ -106,21 +106,35 @@ export const SellerHome: React.FC<SellerHomeProps> = ({ seller, products, seller
         const recentHistory = analytics.salesHistory;
         const maxHistory = Math.max(...recentHistory, 5);
         const polylinePoints = recentHistory.map((val, i) => {
-           const x = i * 150;
+           const x = (i / 6) * 800;
            const y = 240 - ((val / maxHistory) * 200);
            return `${x},${y}`;
         }).join(' ');
 
         return (
           <div className={styles.chartCard} style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px', marginBottom: '32px' }}>
-            <h3 className={styles.chartTitle} style={{ fontSize: '18px', fontWeight: 800, color: '#1e293b', margin: 0 }}>7-Day Order Activity</h3>
+            <h3 className={styles.chartTitle} style={{ fontSize: '18px', fontWeight: 800, color: '#1e293b', margin: 0 }}>7-Day Fulfillment Trends</h3>
             
             <div style={{ position: 'relative', width: '100%', height: '320px', marginTop: '32px' }}>
-              <svg viewBox="50 0 800 300" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                 <line x1="0" y1="40" x2="800" y2="40" stroke="#f1f5f9" strokeWidth="1" />
-                 <line x1="0" y1="140" x2="800" y2="140" stroke="#f1f5f9" strokeWidth="1" />
-                 <line x1="0" y1="240" x2="800" y2="240" stroke="#e2e8f0" strokeWidth="2" />
+              <svg viewBox="0 0 800 300" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                 <defs>
+                   <linearGradient id="chartAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.15" />
+                     <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                   </linearGradient>
+                 </defs>
+
+                 {/* Atmospheric Grid Guides - Synchronized */}
+                 <line x1="0" y1="40" x2="800" y2="40" stroke="#cbd5e1" strokeWidth="1" />
+                 <line x1="0" y1="140" x2="800" y2="140" stroke="#cbd5e1" strokeWidth="1" />
+                 <line x1="0" y1="240" x2="800" y2="240" stroke="#64748b" strokeWidth="3" />
                  
+                 {/* Data Series Shadow (Area Gradient) */}
+                 <path 
+                    d={`M 0 240 ${recentHistory.map((val, i) => `L ${(i/6)*800} ${240 - ((val/maxHistory)*200)}`).join(' ')} L 800 240 Z`}
+                    fill="url(#chartAreaGradient)"
+               />
+
                  <polyline 
                    fill="none" 
                    stroke="#3b82f6" 
@@ -128,18 +142,17 @@ export const SellerHome: React.FC<SellerHomeProps> = ({ seller, products, seller
                    strokeLinecap="round"
                    strokeLinejoin="round"
                    points={polylinePoints} 
-                   style={{ filter: 'drop-shadow(0px 8px 12px rgba(59, 130, 246, 0.25))' }}
                  />
                  
                  {recentHistory.map((val, i) => {
-                    const x = i * 150;
+                    const x = (i / 6) * 800;
                     const y = 240 - ((val / maxHistory) * 200);
                     const dayLabel = new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString('en', { weekday: 'short' });
                     return (
                       <g key={`point-${i}`}>
-                        {val > 0 && <text x={x} y={y - 15} textAnchor="middle" fontSize="12" fill="#64748b" fontWeight="700">{val}</text>}
-                        <circle cx={x} cy={y} r="6" fill="#fff" stroke="#2563eb" strokeWidth="3" style={{ transition: 'all 0.3s ease' }} />
-                        <text x={x} y="280" textAnchor="middle" fontSize="13" fill="#64748b" fontWeight="600" style={{ letterSpacing: '0.5px' }}>{dayLabel}</text>
+                        {val > 0 && <text x={x} y={y - 15} textAnchor="middle" fontSize="12" fill="#1e293b" fontWeight="800">{val}</text>}
+                        <circle cx={x} cy={y} r="6" fill="#fff" stroke="#3b82f6" strokeWidth="3" style={{ filter: 'drop-shadow(0 4px 6px rgba(59, 130, 246, 0.4))' }} />
+                        <text x={x} y="280" textAnchor="middle" fontSize="11" fill="#94a3b8" fontWeight="800" style={{ letterSpacing: '0.5px' }}>{dayLabel}</text>
                       </g>
                     );
                  })}
@@ -163,7 +176,9 @@ export const SellerHome: React.FC<SellerHomeProps> = ({ seller, products, seller
                 )}
                 <div className={styles.productInfo}>
                   <div className={styles.productName}>{productName}</div>
-                  <div className={styles.productMeta}>Buyer: {buyerName} • {new Date(order.orderDate).toLocaleDateString()}</div>
+                  <div className={styles.productMeta}>
+                     Buyer: {buyerName} • Qty: {order.quantity || 1} • {new Date(order.orderDate).toLocaleDateString()}
+                  </div>
                 </div>
                 <div className={styles.productStats}>
                    <Badge label={order.status} variant={variant} size="sm" />

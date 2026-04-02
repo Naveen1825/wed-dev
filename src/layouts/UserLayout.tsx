@@ -66,21 +66,6 @@ const UserLayout: React.FC = () => {
                       {item.icon} {item.label}
                     </button>
                   ))}
-                  {user?.role === 'both' && (
-                     <>
-                        <div className={styles.navDivider} />
-                        <button 
-                           onClick={() => {
-                              navigate(ROUTES.SELLER_DASHBOARD);
-                              setIsMobileMenuOpen(false);
-                           }}
-                           className={styles.navItem}
-                           style={{ color: '#2563eb', fontWeight: 700 }}
-                        >
-                           Store Administration
-                        </button>
-                     </>
-                  )}
                   <div className={styles.navDivider} />
                   <button 
                     onClick={async () => { await logout(); navigate(ROUTES.HOME); }}

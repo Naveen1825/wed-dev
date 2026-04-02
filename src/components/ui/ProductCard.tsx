@@ -22,37 +22,41 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const isMale = product.productGender?.toLowerCase() === 'male';
   
-  // Display only the city and state from the location string (e.g., "Mumbai, MH")
+  // Display only the city and state from the location string (e.g., "Mumbai, Maharashtra")
   const formatLocation = (loc?: string) => {
-    if (!loc || loc === 'Global Marketplace') return 'Global';
+    if (!loc || loc === 'Global Marketplace') return 'Global Hub';
     const parts = loc.split(',').map(p => p.trim()).filter(p => p.length > 0);
     
-    // Indian address logic: identifies if the last part is a PIN code (digits)
-    const hasDigits = (s: string) => /\d/.test(s);
-    let cityIndex = parts.length - 2;
-    let stateIndex = parts.length - 1;
-
-    if (parts.length >= 3 && hasDigits(parts[parts.length - 1])) {
-      // Last part is likely a PIN code, shift back
-      cityIndex = parts.length - 3;
-      stateIndex = parts.length - 2;
-    }
-
-    if (cityIndex >= 0 && stateIndex >= 0) {
-      return `${parts[cityIndex]}, ${parts[stateIndex]}`;
+    // Reverse traverse to find the state and city (skipping PIN codes)
+    const isPin = (s: string) => /^\d+$/.test(s);
+    const geoParts = parts.filter(p => !isPin(p));
+    
+    if (geoParts.length >= 2) {
+      const state = geoParts[geoParts.length - 1];
+      const city = geoParts[geoParts.length - 2];
+      return `${city}, ${state}`;
     }
     
     return loc;
   };
 
-  const displayLocation = formatLocation(product.sellerLocation);
+  // Standardize biological age to a single temporal unit (Years, Months, or Days)
+  const formatAge = (ageStr?: string) => {
+    if (!ageStr) return 'N/A';
+    
+    const years = parseInt((ageStr.match(/(\d+)\s*Years?/i) || [])[1] || '0');
+    const months = parseInt((ageStr.match(/(\d+)\s*Months?/i) || [])[1] || '0');
+    const days = parseInt((ageStr.match(/(\d+)\s*Days?/i) || [])[1] || '0');
 
-  const statusLabels = {
-    APPROVED: 'Approved',
-    PENDING: 'Pending',
-    REJECTED: 'Rejected',
-    SOLD: 'Sold'
+    if (years > 0) return `${years} ${years === 1 ? 'Year' : 'Years'}`;
+    if (months > 0) return `${months} ${months === 1 ? 'Month' : 'Months'}`;
+    if (days > 0) return `${days} ${days === 1 ? 'Day' : 'Days'}`;
+    
+    return ageStr; // Fallback to raw string if no patterns match
   };
+
+  const displayLocation = formatLocation(product.sellerLocation);
+  const displayAge = formatAge(product.productAge);
 
   return (
     <Link 
@@ -68,13 +72,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           className={styles.image}
           loading="lazy"
         />
-        
-        {showStatus && (
-          <div className={`${styles.statusOverlay} ${styles[`status_${product.status}`]}`}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'currentColor' }}></div>
-            {statusLabels[product.status]}
-          </div>
-        )}
       </div>
 
       {/* Information Section */}
@@ -83,7 +80,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <h2 className={styles.title}>
             {product.productSubCategory}
             
-            {/* Badges/Icons Row */}
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginLeft: '8px' }}>
               {product.productVaccinated && (
                 <MdVerified className={styles.verifiedIcon} title="Verified / Vaccinated" />
@@ -110,11 +106,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <footer className={styles.footer}>
           <div className={styles.infoChip}>
             <FiMapPin className={styles.chipIcon} />
-            <span>{displayLocation}</span>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayLocation}</span>
           </div>
           <div className={styles.infoChip}>
             <FiCalendar className={styles.chipIcon} />
-            <span>{product.productAge}</span>
+            <span>{displayAge}</span>
           </div>
         </footer>
       </div>

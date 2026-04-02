@@ -24,12 +24,28 @@ const SellerProfile: React.FC = () => {
   const { user, sellerData, buyerData, isSellerVerified } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { sellers, products, buyers, users, loading } = useSearchData();
+  const { sellers, products, buyers, users, loading: globalLoading } = useSearchData();
   const [isAddingProduct, setIsAddingProduct] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState('');
+  const [isTransitioning, setIsTransitioning] = React.useState(false);
   
   // Use routing to determine active tab for true sidebar sync
   const activeTab = location.pathname.includes('/products') ? 'listings' : 'overview';
+
+  // Auto-clear success messages for a cleaner workspace
+  React.useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  // Handle tab transitions with a premium loading experience
+  const handleTabChange = (path: string) => {
+    setIsTransitioning(true);
+    navigate(path);
+    setTimeout(() => setIsTransitioning(false), 400); // Simulate smooth transition
+  };
 
   // Resolve the active merchant document from Firestore synchronization
   const seller: Seller | null = useMemo(() => {
@@ -72,7 +88,7 @@ const SellerProfile: React.FC = () => {
     }).sort((a, b) => new Date(b.order.orderDate).getTime() - new Date(a.order.orderDate).getTime());
   }, [buyers, users, user, sellerProducts, products]);
 
-  if (loading) return <Loading fullScreen={false} />;
+  if (globalLoading || isTransitioning) return <Loading fullScreen={false} message={isTransitioning ? "Fetching Inventory..." : "Synchronizing Platform..."} />;
   if (!seller) return <div style={{ padding: '60px', textAlign: 'center' }}>Unable to resolve merchant credentials.</div>;
 
   return (
@@ -95,13 +111,13 @@ const SellerProfile: React.FC = () => {
         {/* Portal Feature Toggles */}
         <div className={styles.toggles}>
            <button 
-             onClick={() => navigate(ROUTES.SELLER_DASHBOARD)}
+             onClick={() => handleTabChange(ROUTES.SELLER_DASHBOARD)}
              className={`${styles.toggleBtn} ${activeTab === 'overview' ? styles.toggleBtnActive : styles.toggleBtnInactive}`}
            >
              Performance Overview
            </button>
            <button 
-             onClick={() => navigate(ROUTES.SELLER_DASHBOARD + '/products')}
+             onClick={() => handleTabChange(ROUTES.SELLER_DASHBOARD + '/products')}
              className={`${styles.toggleBtn} ${activeTab === 'listings' ? styles.toggleBtnActive : styles.toggleBtnInactive}`}
            >
              Inventory Tracking

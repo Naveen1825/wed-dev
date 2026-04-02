@@ -29,6 +29,7 @@ export const OrderService = {
       buyerId: orderData.buyerId,
       sellerId: orderData.sellerId,
       amount: orderData.amount * orderData.quantity,
+      quantity: orderData.quantity,
       status: 'PENDING',
       orderDate: new Date().toISOString(),
     };

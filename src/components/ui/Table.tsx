@@ -11,6 +11,7 @@ interface TableProps<T> {
   data: T[];
   columns: Column<T>[];
   loading?: boolean;
+  onRowClick?: (item: T) => void;
 }
 
 /**
@@ -22,7 +23,8 @@ interface TableProps<T> {
 export function Table<T>({ 
   data, 
   columns, 
-  loading 
+  loading,
+  onRowClick
 }: TableProps<T>) {
   return (
     <div className={styles.wrapper}>
@@ -39,7 +41,11 @@ export function Table<T>({
             <tr><td colSpan={columns.length} className={styles.status}>Processing data...</td></tr>
           ) : data.length > 0 ? (
             data.map((item, rowIdx) => (
-              <tr key={rowIdx}>
+              <tr 
+                key={rowIdx} 
+                onClick={() => onRowClick && onRowClick(item)}
+                className={onRowClick ? styles.clickableRow : ''}
+              >
                 {columns.map((col, colIdx) => (
                   <td key={colIdx}>
                     {col.render ? col.render(item) : (item as any)[col.key]}

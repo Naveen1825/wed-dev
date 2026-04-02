@@ -21,7 +21,8 @@ export interface User {
   email: string;
   displayName: string;
   photoURL: string;
-  role: 'admin' | 'seller' | 'buyer' | 'both';
+  role: 'admin' | 'seller' | 'buyer';
+  status?: 'active' | 'suspended';
   createdAt?: string;
   lastLogin?: string;
 }
@@ -63,6 +64,7 @@ export interface Order {
   buyerId: string;
   sellerId: string;
   amount: number;
+  quantity: number;
   status: 'PENDING' | 'PROCESSING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   orderDate: string;
 }
@@ -84,6 +86,7 @@ export interface Seller {
     salesHistory: number[];
   };
   status?: 'onboarding' | 'pending' | 'verified' | 'rejected';
+  dateOfBirth?: string;
 }
 
 export interface Inquiry {

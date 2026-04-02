@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '../services/firebase/config';
-import type { Product, Seller, User, Buyer } from '@/types';
+import type { Product, Seller, User, Buyer, Order } from '@/types';
 
 /**
  * Custom hook to manage fetching and processing global marketplace data.
  * Synchronizes in real-time with Firestore collections (products, sellers, users).
  * Centralizes distributed data models into a unified search and analytics context.
  * 
- * @returns {Object} products, sellers, users, and loading state.
+ * @returns {Object} products, sellers, users, buyers, orders and loading state.
  */
 export const useSearchData = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [buyers, setBuyers] = useState<Buyer[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,39 +24,29 @@ export const useSearchData = () => {
       return;
     }
 
-    const loadState = { sellers: false, products: false, users: false, buyers: false };
+    const loadState = { sellers: false, products: false, users: false, buyers: false, orders: false };
     const checkComplete = () => {
-      if (loadState.sellers && loadState.products && loadState.users && loadState.buyers) {
+      if (loadState.sellers && loadState.products && loadState.users && loadState.buyers && loadState.orders) {
         setLoading(false);
       }
     };
 
-    // 1. Listen to Sellers for normalization and joining
+    // 1. Listen to Sellers
     const unsubscribeSellers = onSnapshot(query(collection(db, 'sellers')), (snapshot) => {
-      const sellerData = snapshot.docs.map(doc => ({
+      setSellers(snapshot.docs.map(doc => ({
         ...(doc.data() as Seller),
         sellerId: doc.id
-      }));
-      setSellers(sellerData);
-      loadState.sellers = true;
-      checkComplete();
-    }, (error) => {
-      console.error('Firestore sellers sync error:', error);
+      })));
       loadState.sellers = true;
       checkComplete();
     });
 
     // 2. Listen to Products
     const unsubscribeProducts = onSnapshot(query(collection(db, 'products')), (snapshot) => {
-      const productData = snapshot.docs.map(doc => ({
+      setProducts(snapshot.docs.map(doc => ({
         ...(doc.data() as Product),
         productId: doc.id
-      }));
-      setProducts(productData);
-      loadState.products = true;
-      checkComplete();
-    }, (error) => {
-      console.error('Firestore products sync error:', error);
+      })));
       loadState.products = true;
       checkComplete();
     });
@@ -68,10 +59,6 @@ export const useSearchData = () => {
       })));
       loadState.users = true;
       checkComplete();
-    }, (error) => {
-      console.error('Firestore users sync error:', error);
-      loadState.users = true;
-      checkComplete();
     });
 
     // 4. Listen to Buyers
@@ -82,43 +69,40 @@ export const useSearchData = () => {
       })));
       loadState.buyers = true;
       checkComplete();
+    });
+
+    // 5. Listen to Orders
+    const unsubscribeOrders = onSnapshot(query(collection(db, 'orders')), (snapshot) => {
+      setOrders(snapshot.docs.map(doc => ({
+        ...(doc.data() as Order),
+        orderId: doc.id
+      })));
+      loadState.orders = true;
+      checkComplete();
     }, (error) => {
-      console.error('Firestore buyers sync error:', error);
-      loadState.buyers = true;
+      console.error('Firestore orders sync error:', error);
+      loadState.orders = true;
       checkComplete();
     });
 
-    // Cleanup listeners on unmount
     return () => {
       unsubscribeSellers();
       unsubscribeProducts();
       unsubscribeUsers();
       unsubscribeBuyers();
+      unsubscribeOrders();
     };
   }, []);
 
-  // Denormalize products with seller info (Joined View)
+  // Denormalize products with seller info
   const enrichedProducts = products.map(product => {
     const seller = sellers.find(s => s.sellerId === product.sellerId);
-    
-    const enriched = {
+    return {
       ...product,
       sellerLocation: product.sellerLocation || seller?.sellerLocation || 'Global Marketplace',
       sellerName: product.sellerName || seller?.shopName || 'Verified Merchant'
     };
-
-    return enriched;
   });
-
-  useEffect(() => {
-    if (!loading && products.length > 0) {
-      console.log('[Product Import] Registry loaded:', {
-        total: products.length,
-        enriched: enrichedProducts.length,
-        sample: enrichedProducts[0]
-      });
-    }
-  }, [loading, products, enrichedProducts]);
 
   const approvedProducts = enrichedProducts.filter(p => p.status === 'APPROVED');
 
@@ -128,6 +112,7 @@ export const useSearchData = () => {
     sellers, 
     users, 
     buyers,
+    orders,
     loading 
   };
 };

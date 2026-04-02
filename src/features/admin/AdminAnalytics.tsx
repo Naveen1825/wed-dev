@@ -75,22 +75,90 @@ const AdminAnalytics: React.FC = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr)', gap: '24px' }}>
         
-         {/* 7-Day Order Trend - Real Data */}
-         <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px 0', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}><FiTrendingUp color="#3b82f6"/> 7-Day Order Activity</h3>
-            <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '32px' }}>Orders placed in the last 7 days.</p>
-            <div style={{ height: '300px', display: 'flex', alignItems: 'flex-end', gap: '12px', paddingBottom: '20px', borderBottom: '1px solid #e2e8f0' }}>
-               {metrics.dailyOrders.map((v, i) => {
-                 const dayLabel = new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString('en', { weekday: 'short' });
-                 const height = maxDailyOrder > 0 ? (v / maxDailyOrder) * 100 : 0;
-                 return (
-                   <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                     <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>{v}</div>
-                     <div style={{ width: '100%', background: '#3b82f6', height: `${Math.max(height, 2)}%`, borderRadius: '4px 4px 0 0', opacity: i === 6 ? 1 : 0.6, transition: 'height 0.3s ease' }} />
-                     <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{dayLabel}</div>
-                   </div>
-                 );
-               })}
+         {/* 7-Day Order Trend - Line Chart Architecture */}
+         <div style={{ background: '#fff', padding: '32px', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 8px 0', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}><FiTrendingUp color="#3b82f6"/> 7-Day Fulfillment Velocity</h3>
+            <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '40px' }}>Historical order volume across the last 7 calendar days.</p>
+            
+            <div style={{ height: '300px', width: '100%', position: 'relative', marginBottom: '20px' }}>
+               <svg viewBox="0 0 700 300" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                  <defs>
+                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.15" />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Atmospheric Grid Guides - High Contrast Mode */}
+                  {[60, 120, 180, 240, 300].map(y => (
+                    <line 
+                      key={y} 
+                      x1="0" 
+                      y1={y} 
+                      x2="700" 
+                      y2={y} 
+                      stroke={y === 300 ? "#94a3b8" : "#cbd5e1"} 
+                      strokeWidth={y === 300 ? "2.5" : "1"} 
+                      strokeOpacity="0.8" 
+                    />
+                  ))}
+
+                  {/* Dynamic Area Fill - Full Width Alignment */}
+                  <path 
+                    d={`M 0 300 ${metrics.dailyOrders.map((v, i) => `L ${i * 116.666} ${300 - (maxDailyOrder > 0 ? (v / maxDailyOrder) * 240 : 0)}`).join(' ')} L 700 300 Z`}
+                    fill="url(#chartGradient)"
+                    style={{ transition: 'd 0.5s ease' }}
+                  />
+
+                  {/* Data Series Line - Edge to Edge */}
+                  <polyline
+                    fill="none"
+                    stroke="#3b82f6"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    points={metrics.dailyOrders.map((v, i) => `${i * 116.666},${300 - (maxDailyOrder > 0 ? (v / maxDailyOrder) * 240 : 0)}`).join(' ')}
+                    style={{ transition: 'points 0.5s ease' }}
+                  />
+
+                  {/* Bullet Markers - Synchronized with Axis */}
+                  {metrics.dailyOrders.map((v, i) => {
+                    const x = i * 116.666;
+                    const y = 300 - (maxDailyOrder > 0 ? (v / maxDailyOrder) * 240 : 0);
+                    return (
+                      <g key={i} style={{ transition: 'transform 0.5s ease' }}>
+                        <circle cx={x} cy={y} r="6" fill="#fff" stroke="#3b82f6" strokeWidth="2.5" style={{ filter: 'drop-shadow(0px 4px 4px rgba(59, 130, 246, 0.4))' }} />
+                        <text x={x} y={y - 15} textAnchor="middle" style={{ fontSize: '12px', fontWeight: 800, fill: '#1e293b' }}>{v}</text>
+                      </g>
+                    );
+                  })}
+               </svg>
+            </div>
+
+            {/* Synchronized X-Axis Labels */}
+            <div style={{ position: 'relative', height: '20px', width: '100%', marginTop: '12px' }}>
+              {metrics.dailyOrders.map((_, i) => {
+                const dayLabel = new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString('en', { weekday: 'short' });
+                const leftPercent = (i / 6) * 100;
+                return (
+                  <div 
+                    key={i} 
+                    style={{ 
+                      position: 'absolute', 
+                      left: `${leftPercent}%`, 
+                      transform: i === 0 ? 'none' : i === 6 ? 'translateX(-100%)' : 'translateX(-50%)',
+                      fontSize: '11px', 
+                      color: '#94a3b8', 
+                      fontWeight: 800, 
+                      textTransform: 'uppercase', 
+                      letterSpacing: '0.05em',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {dayLabel}
+                  </div>
+                );
+              })}
             </div>
          </div>
 

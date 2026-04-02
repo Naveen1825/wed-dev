@@ -133,30 +133,8 @@
   position: relative;
 }
 
-/* Gradient fades */
-
-.breed-scroll-wrapper::before,
-.breed-scroll-wrapper::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 80px;
-  height: 100%;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.breed-scroll-wrapper::before {
-  left: 0;
-  background: linear-gradient(to right, white, transparent);
-}
-
-.breed-scroll-wrapper::after {
-  right: 0;
-  background: linear-gradient(to left, white, transparent);
-}
-
 /* Scroll container */
+
 
 .breed-scroll {
   display: flex;

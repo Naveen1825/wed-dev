@@ -3,6 +3,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/services/firebase/config';
 import { AuthService } from '@/services/api/AuthService';
+import { isAdminSubdomain } from '@/utils/subdomain';
 import type { User, Seller, Buyer } from '@/types';
 
 interface AuthContextType {
@@ -10,15 +11,16 @@ interface AuthContextType {
   sellerData: Seller | null;
   buyerData: Buyer | null;
   loading: boolean;
-  role: 'admin' | 'buyer' | 'seller' | 'both' | null;
+  role: 'admin' | 'buyer' | 'seller' | null;
   isProfileComplete: boolean;
   isSellerVerified: boolean;
   login: (email: string, pass: string) => Promise<User | null>;
+  loginAdmin: (email: string, pass: string) => Promise<User | null>;
   register: (email: string, pass: string, role: 'buyer' | 'seller') => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
   updateBuyerProfile: (data: Partial<Buyer>) => Promise<void>;
   loginWithGoogle: (role: 'buyer' | 'seller') => Promise<{ user?: User | null; sellerStatus?: string; requiresConfirmation?: boolean; pendingUserData?: User }>;
-  upgradeToDualRole: (uid: string) => Promise<void>;
+  convertToSeller: (uid: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -43,59 +45,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user.role === 'admin') return true;
     if (user.role === 'buyer') return !!buyerData?.phone;
     if (user.role === 'seller') return sellerData?.status !== 'onboarding';
-    if (user.role === 'both') return !!buyerData?.phone && sellerData?.status !== 'onboarding';
     return false;
   }, [user, sellerData, buyerData]);
 
   const isSellerVerified = sellerData?.status === 'verified';
 
   useEffect(() => {
+    const isAsAdmin = isAdminSubdomain();
+    
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true); // Ensure lockout while fetching
+      setLoading(true);
       try {
         if (firebaseUser) {
-          // Fetch extended profile database document
-          const userRef = doc(db, 'users', firebaseUser.uid);
-          const userDoc = await getDoc(userRef);
+          // STRICT DOMAIN ISOLATION CHECK
+          // We check our locally stored session marker to ensure this session was 
+          // intended for the current subdomain.
+          const sessionType = localStorage.getItem('anisell_session_type');
           
-          if (userDoc.exists()) {
-            let userData = userDoc.data() as User;
-            setUser(userData);
-
-            // Conditional Deep Fetch for Merchant profiles
-            if (userData.role === 'seller' || userData.role === 'both') {
-              const sellerRef = doc(db, 'sellers', firebaseUser.uid);
-              const sellerDoc = await getDoc(sellerRef);
-              if (sellerDoc.exists()) {
-                let sData = sellerDoc.data() as Seller;
-                sData.productIds = sData.productIds || [];
-                sData.analytics = sData.analytics || { totalSales: 0, revenue: 0, storeViews: 0, conversion: 0, storeRating: 0, salesHistory: [] };
-                sData.status = sData.status || 'pending';
-                setSellerData(sData);
-              } else {
-                setSellerData(null);
-              }
-            } else {
-              setSellerData(null);
-            }
-
-            // Deep fetch for Buyer data
-            if (userData.role === 'buyer' || userData.role === 'both') {
-              const buyerRef = doc(db, 'buyers', firebaseUser.uid);
-              const buyerDoc = await getDoc(buyerRef);
-              if (buyerDoc.exists()) {
-                setBuyerData(buyerDoc.data() as Buyer);
-              } else {
-                setBuyerData(null);
-              }
-            } else {
-              setBuyerData(null);
-            }
+          if (isAsAdmin) {
+             if (sessionType !== 'admin') {
+                // If on admin subdomain but session is NOT marked as admin, clear it.
+                await AuthService.logout();
+                setUser(null);
+                return;
+             }
+             // Synthetic Admin Load (No Firestore usage)
+             setUser({
+                uid: firebaseUser.uid,
+                email: firebaseUser.email || '',
+                displayName: 'System Administrator',
+                photoURL: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png',
+                role: 'admin'
+             });
           } else {
-             // User deleted from firestore but session alive
-            setUser(null);
-            setSellerData(null);
-            setBuyerData(null);
+             if (sessionType === 'admin') {
+                // If on main domain but session IS marked as admin, clear it.
+                await AuthService.logout();
+                setUser(null);
+                return;
+             }
+             
+             // Standard User/Seller Load (Firestore usage)
+             const userRef = doc(db, 'users', firebaseUser.uid);
+             const userDoc = await getDoc(userRef);
+             
+             if (userDoc.exists()) {
+               let userData = userDoc.data() as User;
+               setUser(userData);
+
+               if (userData.role === 'seller') {
+                 const sellerRef = doc(db, 'sellers', firebaseUser.uid);
+                 const sellerDoc = await getDoc(sellerRef);
+                 if (sellerDoc.exists()) {
+                   setSellerData(sellerDoc.data() as Seller);
+                 }
+               }
+
+               if (userData.role === 'buyer') {
+                 const buyerRef = doc(db, 'buyers', firebaseUser.uid);
+                 const buyerDoc = await getDoc(buyerRef);
+                 if (buyerDoc.exists()) {
+                   setBuyerData(buyerDoc.data() as Buyer);
+                 }
+               }
+             } else {
+               setUser(null);
+             }
           }
         } else {
           setUser(null);
@@ -114,8 +129,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, pass: string) => {
     const userData = await AuthService.loginWithEmail(email, pass);
+    localStorage.setItem('anisell_session_type', 'standard');
     setUser(userData);
     return userData;
+  };
+
+  const loginAdmin = async (email: string, pass: string) => {
+     const userData = await AuthService.loginAdmin(email, pass);
+     localStorage.setItem('anisell_session_type', 'admin');
+     setUser(userData);
+     return userData;
   };
 
   const register = async (email: string, pass: string, reqRole: 'buyer' | 'seller') => {
@@ -147,8 +170,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { user: userData, sellerStatus: sData?.status };
   };
 
-  const upgradeToDualRole = async (uid: string) => {
-    const { user: userData, sellerData: sData, buyerData: bData } = await AuthService.upgradeToDualRole(uid, buyerData?.phone);
+  const convertToSeller = async (uid: string) => {
+    const { user: userData, sellerData: sData, buyerData: bData } = await AuthService.convertToSeller(uid);
     setUser(userData);
     setSellerData(sData);
     setBuyerData(bData);
@@ -157,6 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     await AuthService.logout();
     localStorage.removeItem('anisell_user_details');
+    localStorage.removeItem('anisell_session_type');
     setUser(null);
     setSellerData(null);
     setBuyerData(null);
@@ -165,7 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{ 
        user, sellerData, buyerData, loading, role, isProfileComplete, isSellerVerified, 
-       login, register, updateProfile, updateBuyerProfile, loginWithGoogle, upgradeToDualRole, logout 
+       login, loginAdmin, register, updateProfile, updateBuyerProfile, loginWithGoogle, convertToSeller, logout 
     }}>
       {children}
     </AuthContext.Provider>

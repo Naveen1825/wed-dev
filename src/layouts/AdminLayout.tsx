@@ -5,6 +5,7 @@ import {
   FiDollarSign, FiPieChart, FiBell, FiBriefcase
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
+import { getMainDomainUrl } from '@/utils/subdomain';
 import styles from './AdminLayout.module.css';
 
 /**
@@ -40,7 +41,7 @@ const AdminLayout: React.FC = () => {
         <button 
           className="button-base button-primary" 
           style={{ marginTop: '30px' }}
-          onClick={() => window.location.href = '/'}
+          onClick={() => window.location.href = getMainDomainUrl()}
         >
           Return to Marketplace
         </button>
@@ -49,14 +50,14 @@ const AdminLayout: React.FC = () => {
   }
 
   const navItems = [
-    { path: '/admin', icon: <FiGrid />, label: 'Overview' },
-    { path: '/admin/users', icon: <FiUsers />, label: 'User Management' },
-    { path: '/admin/sellers', icon: <FiBriefcase />, label: 'Seller Directory' },
-    { path: '/admin/products', icon: <FiShoppingBag />, label: 'Product Control' },
-    { path: '/admin/orders', icon: <FiArchive />, label: 'Order Tracking' },
-    { path: '/admin/payments', icon: <FiDollarSign />, label: 'Payments & Revenue' },
-    { path: '/admin/analytics', icon: <FiPieChart />, label: 'Platform Analytics' },
-    { path: '/admin/settings', icon: <FiBell />, label: 'Alerts & Settings' },
+    { path: '/profile', icon: <FiGrid />, label: 'Overview' },
+    { path: '/profile/users', icon: <FiUsers />, label: 'User Management' },
+    { path: '/profile/sellers', icon: <FiBriefcase />, label: 'Seller Directory' },
+    { path: '/profile/products', icon: <FiShoppingBag />, label: 'Product Control' },
+    { path: '/profile/orders', icon: <FiArchive />, label: 'Order Tracking' },
+    { path: '/profile/payments', icon: <FiDollarSign />, label: 'Payments & Revenue' },
+    { path: '/profile/analytics', icon: <FiPieChart />, label: 'Platform Analytics' },
+    { path: '/profile/settings', icon: <FiBell />, label: 'Alerts & Settings' },
   ];
 
   return (
@@ -76,7 +77,7 @@ const AdminLayout: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`${styles.navItem} ${(location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path))) ? styles.navItemActive : ''}`}
+              className={`${styles.navItem} ${(location.pathname === item.path || (item.path !== '/profile' && location.pathname.startsWith(item.path))) ? styles.navItemActive : ''}`}
             >
               <span className={styles.icon}>{item.icon}</span>
               <span className={styles.label}>{item.label}</span>

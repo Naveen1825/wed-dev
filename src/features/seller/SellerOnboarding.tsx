@@ -6,7 +6,7 @@ import { ROUTES } from '@/constants/routes';
 import { uploadToCloudinary } from '@/services/cloudinary';
 import { Input } from '@/components/ui/Input';
 import { ProfileSharedFields } from '@/components/common/ProfileSharedFields';
-import { FiUploadCloud, FiEye, FiTrash2, FiFileText, FiX } from 'react-icons/fi';
+import { FiUploadCloud, FiEye, FiTrash2, FiX } from 'react-icons/fi';
 import styles from './SellerOnboarding.module.css';
 
 /**
@@ -49,6 +49,13 @@ const SellerOnboarding: React.FC = () => {
    const handleCertificateUpload = async (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent) => {
       const file = (e as any).target?.files?.[0] || (e as any).dataTransfer?.files?.[0];
       if (!file) return;
+      
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+         return setError('Only image files (.jpg, .jpeg, .png, .webp) are allowed for document upload.');
+      }
+
+      setError('');
       const preview = await stageFile(file);
       setCertStaging({ file, preview });
    };
@@ -124,7 +131,8 @@ const SellerOnboarding: React.FC = () => {
       }
    };
 
-   const isPdf = (url: string) => url.startsWith('data:application/pdf') || url.toLowerCase().endsWith('.pdf') || url.includes('/v1/pdf/');
+   // Remove the isPdf check since we only allow images now
+   // const isPdf = (url: string) => url.startsWith('data:application/pdf') || url.toLowerCase().endsWith('.pdf') || url.includes('/v1/pdf/');
 
    return (
       <div className={styles.container}>
@@ -150,25 +158,21 @@ const SellerOnboarding: React.FC = () => {
                
                {/* 2.1 Certificate Segment */}
                <div>
-                  <h4 style={{ fontSize: '14px', marginBottom: '12px', color: '#64748b', fontWeight: 700 }}>OFFICIAL BUSINESS CERTIFICATE</h4>
+                  <h4 style={{ fontSize: '14px', marginBottom: '12px', color: '#64748b', fontWeight: 700 }}>OFFICIAL BUSINESS CERTIFICATE (IMAGE ONLY)</h4>
                   <label 
                      className={styles.dropzone}
                      onDragOver={handleDragOver}
                      onDrop={(e) => handleDrop(e, 'cert')}
                   >
                      <FiUploadCloud size={32} color="#3b82f6" />
-                     <div className={styles.uploadLabel}>Drop Certificate or Click to Browse</div>
-                     <input type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={handleCertificateUpload} />
+                     <div className={styles.uploadLabel}>Drop Certificate Image or Click Header</div>
+                     <input type="file" accept="image/png, image/jpeg, image/jpg, image/webp" style={{ display: 'none' }} onChange={handleCertificateUpload} />
                   </label>
                   {certStaging && (
                      <div className={styles.previewGrid}>
                         <div className={styles.previewItem}>
                            <div onClick={() => setActiveMedia(certStaging.preview)} style={{ width: '100%', height: '100%' }}>
-                              {isPdf(certStaging.preview) ? (
-                                 <div className={styles.pdfPreview}><FiFileText size={40} /></div>
-                              ) : (
-                                 <img src={certStaging.preview} className={styles.previewImg} alt="Certificate" />
-                              )}
+                              <img src={certStaging.preview} className={styles.previewImg} alt="Certificate" />
                               <div className={styles.previewOverlay}><FiEye size={20} /></div>
                            </div>
                            <button onClick={() => setCertStaging(null)} style={{ position: 'absolute', top: 5, right: 5, background: 'rgba(239, 68, 68, 0.9)', border: 'none', borderRadius: '4px', color: 'white', padding: '4px', cursor: 'pointer', zIndex: 10 }}>
@@ -206,8 +210,19 @@ const SellerOnboarding: React.FC = () => {
             </div>
          </div>
 
-         <button className={styles.submitBtn} disabled={!!uploadingStatus} onClick={handleCompleteRegistration}>
-            {uploadingStatus || 'Submit for Verification'}
+         <button 
+           className={`${styles.submitBtn} ${uploadingStatus ? styles.btnUploading : ''}`} 
+           disabled={!!uploadingStatus} 
+           onClick={handleCompleteRegistration}
+         >
+            {uploadingStatus ? (
+               <div className={styles.loaderContainer}>
+                  <div className={styles.spinner}></div>
+                  <span>{uploadingStatus}</span>
+               </div>
+            ) : (
+               'Submit for Verification'
+            )}
          </button>
 
          {/* Lightbox Rendering */}
@@ -215,13 +230,7 @@ const SellerOnboarding: React.FC = () => {
             <div className={styles.lightbox} onClick={() => setActiveMedia(null)}>
                <button className={styles.closeLightbox}><FiX /></button>
                <div className={styles.lightboxContent} onClick={e => e.stopPropagation()}>
-                  {isPdf(activeMedia) ? (
-                     <object data={activeMedia} type="application/pdf" className={styles.lightboxPdf}>
-                        <embed src={activeMedia} type="application/pdf" />
-                     </object>
-                  ) : (
-                     <img src={activeMedia} className={styles.lightboxImg} alt="Fullscreen preview" />
-                  )}
+                  <img src={activeMedia} className={styles.lightboxImg} alt="Fullscreen preview" />
                </div>
             </div>
          )}

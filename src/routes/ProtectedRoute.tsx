@@ -14,7 +14,7 @@ interface ProtectedRouteProps {
  * Handles authentication checks, generic onboarding interception, and role-specific redirection.
  */
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
-  const { user, buyerData, loading, isProfileComplete } = useAuth();
+  const { user, loading, isProfileComplete } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -28,13 +28,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
 
   // 2. Generic Onboarding Constraint Flow (Buyer & Seller)
   if (!isProfileComplete) {
-    let targetOnboarding = '/buyer-onboarding';
-    if (user.role === 'seller') {
-       targetOnboarding = '/seller-onboarding';
-    } else if (user.role === 'both') {
-       // If dual-mode, check which one is missing
-       targetOnboarding = !buyerData?.phone ? '/buyer-onboarding' : '/seller-onboarding';
-    }
+    const targetOnboarding = user.role === 'seller' ? '/seller-onboarding' : '/buyer-onboarding';
     
     if (location.pathname !== targetOnboarding) {
       return <Navigate to={targetOnboarding} replace />;
@@ -51,13 +45,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
 
   // 3. System Role Check
   if (allowedRoles) {
-    const isDualEligible = user.role === 'both' && (allowedRoles.includes('buyer') || allowedRoles.includes('seller'));
-    
-    if (!allowedRoles.includes(user.role as any) && !isDualEligible) {
+    if (!allowedRoles.includes(user.role as any)) {
       // Redirect to their respective dashboards if they have their own but trying to access unauthorized one
       const redirectPath = user.role === 'admin' 
         ? ROUTES.ADMIN_DASHBOARD 
-        : (user.role === 'both' || user.role === 'seller' ? ROUTES.SELLER_DASHBOARD : ROUTES.USER_PROFILE);
+        : (user.role === 'seller' ? ROUTES.SELLER_DASHBOARD : ROUTES.USER_PROFILE);
         
       return <Navigate to={redirectPath} replace />;
     }

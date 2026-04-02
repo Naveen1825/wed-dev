@@ -1,4 +1,5 @@
 import { auth, db, googleProvider } from '../firebase/config';
+import { isAdminEmail } from '@/utils/subdomain';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
@@ -22,6 +23,26 @@ export const AuthService = {
       return userDoc.data() as User;
     }
     return null;
+  },
+
+  async loginAdmin(email: string, pass: string): Promise<User | null> {
+     if (!isAdminEmail(email)) {
+        throw new Error('Access Denied: Email not in platform administrative registry.');
+     }
+     
+     // Admin credentials are validated via Firebase Auth, but we bypass Firestore data retrieval
+     // This ensures zero usage of 'users' or 'sellers' collections for admin profiles
+     const result = await signInWithEmailAndPassword(auth, email, pass);
+     
+     // Return a synthetic admin profile to satisfy internal state requirements 
+     // following strict platform isolation rules
+     return {
+        uid: result.user.uid,
+        email: result.user.email || '',
+        displayName: 'System Administrator',
+        photoURL: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png',
+        role: 'admin'
+     };
   },
 
   async registerWithEmail(email: string, pass: string, role: 'buyer' | 'seller'): Promise<User> {
@@ -53,7 +74,7 @@ export const AuthService = {
     const userRef = doc(db, 'users', firebaseUser.uid);
     const userSnap = await getDoc(userRef);
     
-    let finalRole: 'buyer' | 'seller' | 'admin' | 'both' = requestedRole;
+    let finalRole: 'buyer' | 'seller' | 'admin' = requestedRole;
     let finalUserData: User;
 
     if (!userSnap.exists()) {
@@ -81,7 +102,7 @@ export const AuthService = {
     let finalBuyerData: Buyer | null = null;
 
     // Fetch or Initialize Buyer specific record
-    if (finalRole === 'buyer' || finalRole === 'both') {
+    if (finalRole === 'buyer') {
        const buyerRef = doc(db, 'buyers', firebaseUser.uid);
        const buyerSnap = await getDoc(buyerRef);
        if (!buyerSnap.exists()) {
@@ -92,7 +113,7 @@ export const AuthService = {
     }
 
     // Fetch or Initialize Merchant specific record
-    if (finalRole === 'seller' || finalRole === 'both') {
+    if (finalRole === 'seller') {
        const sellerRef = doc(db, 'sellers', firebaseUser.uid);
        const sellerSnap = await getDoc(sellerRef);
        if (!sellerSnap.exists()) {
@@ -116,6 +137,7 @@ export const AuthService = {
         shopPhotoUrls: [],
         productIds: [],
         status: 'onboarding', 
+        dateOfBirth: '',
         analytics: { totalSales: 0, revenue: 0, storeViews: 0, conversion: 0, storeRating: 0, salesHistory: [] }
      };
      await setDoc(sellerRef, newSellerProfile);
@@ -137,30 +159,54 @@ export const AuthService = {
      return newBuyerProfile;
   },
 
-  async upgradeToDualRole(uid: string, phone: string = ''): Promise<{ user: User; sellerData: Seller; buyerData: Buyer }> {
+  async convertToSeller(uid: string): Promise<{ user: User; sellerData: Seller; buyerData: Buyer }> {
     const userRef = doc(db, 'users', uid);
-    await updateDoc(userRef, { role: 'both' });
+    await updateDoc(userRef, { role: 'seller' });
     
     const userDoc = await getDoc(userRef);
     const userData = userDoc.data() as User;
 
+    // 1. Fetch Buyer Data for migration
+    const buyerRef = doc(db, 'buyers', uid);
+    const buyerSnap = await getDoc(buyerRef);
+    let finalBuyerData: Buyer;
+    
+    if (buyerSnap.exists()) {
+       finalBuyerData = buyerSnap.data() as Buyer;
+       // 2. Mark Buyer record as inactive
+       await updateDoc(buyerRef, { status: 'inactive' });
+    } else {
+       finalBuyerData = await this.initializeBuyerProfile(uid, '');
+       await updateDoc(buyerRef, { status: 'inactive' });
+    }
+
+    // 3. Initialize/Migrate to Seller Profile
     let finalSellerData: Seller;
     const sellerRef = doc(db, 'sellers', uid);
     const sellerSnap = await getDoc(sellerRef);
     
     if (!sellerSnap.exists()) {
-       finalSellerData = await this.initializeSellerProfile(uid, phone);
+       // Migrate specific fields from Buyer profile if they exist
+       const sellerPhone = finalBuyerData.phone || '';
+       const sellerLocation = finalBuyerData.addresses?.[0] 
+          ? [finalBuyerData.addresses[0].addressLine, finalBuyerData.addresses[0].city, finalBuyerData.addresses[0].state].filter(Boolean).join(', ')
+          : 'Pending Onboarding';
+
+       finalSellerData = {
+          sellerId: uid,
+          sellerLocation,
+          sellerNumber: sellerPhone,
+          shopName: '', 
+          sellerCertificateUrl: '',
+          shopPhotoUrls: [],
+          productIds: [],
+          status: 'onboarding', 
+          dateOfBirth: finalBuyerData.dateOfBirth || '',
+          analytics: { totalSales: 0, revenue: 0, storeViews: 0, conversion: 0, storeRating: 0, salesHistory: [] }
+       };
+       await setDoc(sellerRef, finalSellerData);
     } else {
        finalSellerData = sellerSnap.data() as Seller;
-    }
-
-    let finalBuyerData: Buyer;
-    const buyerRef = doc(db, 'buyers', uid);
-    const buyerSnap = await getDoc(buyerRef);
-    if (!buyerSnap.exists()) {
-       finalBuyerData = await this.initializeBuyerProfile(uid, phone);
-    } else {
-       finalBuyerData = buyerSnap.data() as Buyer;
     }
 
     return { user: userData, sellerData: finalSellerData, buyerData: finalBuyerData };

@@ -378,7 +378,7 @@ const Checkout: React.FC = () => {
                   <div className={styles.promiseDot} /> Health certificate included
                 </li>
                 <li className={styles.promiseItem}>
-                  <div className={styles.promiseDot} /> 7-day return policy
+                  <div className={styles.promiseDot} /> no return policy
                 </li>
                 <li className={styles.promiseItem}>
                   <div className={styles.promiseDot} /> Free vaccination records

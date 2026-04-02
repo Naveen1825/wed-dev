@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSearchData } from '@/hooks/useSearchData';
 import { Loading } from '@/components/common/Loading';
 import { Badge } from '@/components/ui/Badge';
-import { FiArrowLeft, FiCheckCircle, FiXCircle, FiEye, FiFileText, FiX, FiPhone } from 'react-icons/fi';
+import { FiArrowLeft, FiX } from 'react-icons/fi';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/services/firebase/config';
+import type { Order, Product } from '@/types';
 
 /**
  * Dedicated Admin Dossier & KYC Verification Endpoint.
@@ -13,208 +14,256 @@ import { db } from '@/services/firebase/config';
 const AdminUserDossier: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { users, sellers, buyers, loading } = useSearchData();
+  const { users, sellers, buyers, orders, products, loading } = useSearchData();
   const [activeMedia, setActiveMedia] = React.useState<string | null>(null);
 
   if (loading) return <Loading fullScreen={false} />;
 
   const user = users.find(u => u.uid === id);
+  const sellerData = sellers.find(s => s.sellerId === id);
+  const buyerData = buyers.find(b => b.buyerId === id);
+
   if (!user) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>Identity Record Not Found</h2>
-        <button onClick={() => navigate('/admin/users')} className="button-base button-outline" style={{ marginTop: '20px' }}>Return to Directory</button>
+      <div style={{ padding: '80px 20px', textAlign: 'center' }}>
+        <h2 style={{ fontSize: '32px', fontWeight: 800, color: '#1e293b', marginBottom: '16px' }}>Identity Record Not Found</h2>
+        <p style={{ color: '#64748b', marginBottom: '32px' }}>The requested administrative dossier for UID {id?.substring(0, 8)} is unavailable.</p>
+        <button onClick={() => navigate('/admin/users')} style={{ padding: '12px 24px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>Return to Directory</button>
       </div>
     );
   }
 
-  const linkedSeller = sellers.find(s => s.sellerId === user.uid);
-  const linkedBuyer = buyers.find(b => b.buyerId === user.uid);
-  const contactPhone = linkedSeller?.sellerNumber || linkedBuyer?.phone || 'Not Shared';
-
   const handleApproval = async (approve: boolean) => {
-    if (!linkedSeller) return;
+    if (!sellerData) return;
     const actionText = approve ? 'verify and approve' : 'reject';
-    if (!window.confirm(`Are you sure you want to ${actionText} storefront ${linkedSeller.shopName || 'Unknown Store'}?`)) return;
+    if (!window.confirm(`Are you certain you want to ${actionText} storefront ${sellerData.shopName || 'Unknown Store'}?`)) return;
     
     try {
-      const sellerRef = doc(db, 'sellers', linkedSeller.sellerId);
+      const sellerRef = doc(db, 'sellers', sellerData.sellerId);
       await updateDoc(sellerRef, { status: approve ? 'verified' : 'rejected' });
-      alert(`Seller store has been successfully ${approve ? 'verified' : 'rejected'}.`);
+      alert(`Governance status updated: Storefront is now ${approve ? 'Verified Active' : 'Restricted'}.`);
     } catch (error) {
       console.error(`Error attempting to ${actionText} merchant:`, error);
-      alert(`Governance Pipeline Failed: Unable to ${actionText} store. Check permissions.`);
+      alert(`Authorization Pipeline Failure: Unable to ${actionText} store.`);
     }
   };
 
-    const isPdf = (url: string) => url?.startsWith('data:application/pdf') || url?.toLowerCase().endsWith('.pdf') || url?.includes('/v1/pdf/');
+  // Compute Related Data
+  const userOrders = (orders as Order[]).filter(o => o.buyerId === user.uid);
+  const sellerOrders = (orders as Order[]).filter(o => o.sellerId === user.uid);
+  const sellerProducts = (products as Product[]).filter(p => p.sellerId === user.uid);
+  
+  const totalRevenue = sellerOrders.reduce((sum: number, o: Order) => sum + (o.amount || 0), 0);
+  const contactPhone = sellerData?.sellerNumber || buyerData?.phone || 'Private Record';
 
-    return (
-    <div className="admin-dashboard-content" style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
-      <button 
-        onClick={() => navigate(-1)} 
-        style={{ background: 'none', border: 'none', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: 0, marginBottom: '32px', fontWeight: 600, fontSize: '14px' }}
-      >
-        <FiArrowLeft /> Back to Directory
-      </button>
+  return (
+    <div className="admin-dashboard-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
+      <header style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <button 
+          onClick={() => navigate(-1)} 
+          style={{ background: '#fff', border: '1px solid #e2e8f0', color: '#475569', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '10px 20px', borderRadius: '14px', fontWeight: 700, fontSize: '14px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+        >
+          <FiArrowLeft /> Back to Directory
+        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+           <Badge label={`ID: ${user.uid.substring(0, 12)}...`} variant="neutral" />
+           <Badge label={user.status === 'suspended' ? 'SUSPENDED' : 'VERIFIED ACTIVE'} variant={user.status === 'suspended' ? 'error' : 'success'} />
+        </div>
+      </header>
 
-      <div style={{ backgroundColor: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '32px', alignItems: 'start' }}>
         
-        {/* Profile Header */}
-        <div style={{ padding: '40px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '32px', background: 'linear-gradient(to right, #ffffff, #f8fafc)' }}>
-           <div style={{ position: 'relative' }}>
-              <img src={user.photoURL || 'https://www.w3schools.com/howto/img_avatar.png'} alt="" style={{ width: '120px', height: '120px', borderRadius: '32px', objectFit: 'cover', border: '4px solid #fff', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
-              <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', width: '24px', height: '24px', background: '#10b981', border: '3px solid #fff', borderRadius: '50%' }} />
-           </div>
-           <div>
-              <h1 style={{ fontSize: '32px', fontWeight: 800, color: '#0f172a', margin: '0 0 4px 0', letterSpacing: '-0.025em' }}>{user.displayName}</h1>
-              <p style={{ color: '#64748b', margin: '0 0 16px 0', fontSize: '18px', fontWeight: 500 }}>{user.email}</p>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                 <Badge label={user.role?.toUpperCase()} variant={user.role === 'admin' ? 'primary' : 'success'} />
-                 <Badge label="Active Member" variant="neutral" />
-              </div>
-           </div>
-        </div>
-
-        <div style={{ padding: '40px' }}>
-           {/* Section 1: Identity & Credentials */}
-           <div style={{ marginBottom: '48px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#1e293b', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                 <div style={{ width: '4px', height: '20px', background: '#3b82f6', borderRadius: '2px' }} />
-                 Administrative Metadata
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
-                 {[
-                    { label: 'Cloud Registry ID', value: user.uid, color: '#64748b' },
-                    { label: 'Security Status', value: 'Verified Auth', color: '#10b981' },
-                    { label: 'Primary Contact', value: contactPhone, color: '#64748b' },
-                    { label: 'Last Check-in', value: user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'March 28, 2026', color: '#64748b' }
-                 ].map((stat, i) => (
-                    <div key={i} style={{ padding: '20px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                       <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em', marginBottom: '8px' }}>{stat.label}</div>
-                       <div style={{ fontSize: '14px', color: stat.color, fontWeight: 700, wordBreak: 'break-all' }}>{stat.value}</div>
-                    </div>
-                 ))}
-              </div>
-           </div>
-
-           {/* KYC Hub for Merchants */}
-           {(user.role === 'seller' || user.role === 'both') && linkedSeller && (
-              <div style={{ background: '#fff', borderRadius: '24px', border: '1px solid #3b82f620', overflow: 'hidden' }}>
-                 <div style={{ padding: '32px', background: '#3b82f608', borderBottom: '1px solid #3b82f615' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                       <div>
-                          <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#1e293b', margin: '0 0 4px 0' }}>KYC Authority Dashboard</h3>
-                          <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>Merchant Verification & Compliance Audit</p>
-                       </div>
-                       <Badge 
-                          label={linkedSeller.status?.toUpperCase() || 'PENDING'} 
-                          variant={linkedSeller.status === 'verified' ? 'success' : linkedSeller.status === 'rejected' ? 'error' : 'warning'} 
-                       />
-                    </div>
+        {/* Sidebar: Profile Snapshot */}
+        <aside style={{ position: 'sticky', top: '24px' }}>
+           <div style={{ background: '#fff', borderRadius: '32px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <div style={{ padding: '40px 24px', textAlign: 'center', background: 'linear-gradient(135deg, #f8fafc, #ffffff)' }}>
+                 <div style={{ width: '140px', height: '140px', margin: '0 auto 24px', position: 'relative' }}>
+                    <img src={user.photoURL || 'https://www.w3schools.com/howto/img_avatar.png'} alt="" style={{ width: '100%', height: '100%', borderRadius: '48px', objectFit: 'cover', border: '4px solid #fff', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }} />
+                    <div style={{ position: 'absolute', bottom: '4px', right: '4px', width: '28px', height: '28px', background: user.status === 'suspended' ? '#ef4444' : '#10b981', border: '4px solid #fff', borderRadius: '50%' }} />
                  </div>
-
-                 <div style={{ padding: '32px' }}>
-                    {/* Business Details Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '40px', padding: '24px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                       <div><div style={{ fontSize: '11px', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Shop Name</div><div style={{ fontWeight: 700, color: '#0f172a', fontSize: '15px' }}>{linkedSeller.shopName || 'N/A'}</div></div>
-                       <div><div style={{ fontSize: '11px', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Operating Base</div><div style={{ fontWeight: 700, color: '#0f172a', fontSize: '15px' }}>{linkedSeller.sellerLocation || 'N/A'}</div></div>
-                       <div><div style={{ fontSize: '11px', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Merchant Phone</div><div style={{ fontWeight: 700, color: '#3b82f6', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}><FiPhone size={14}/> {linkedSeller.sellerNumber || 'N/A'}</div></div>
-                       <div><div style={{ fontSize: '11px', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Market Cap</div><div style={{ fontWeight: 700, color: '#0f172a', fontSize: '15px' }}>{linkedSeller.analytics?.totalSales || 0} Deals</div></div>
+                 <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', marginBottom: '4px', letterSpacing: '-0.025em' }}>{user.displayName}</h2>
+                 <p style={{ color: '#64748b', fontSize: '14px', fontWeight: 500, marginBottom: '24px' }}>{user.email}</p>
+                 <Badge label={user.role.toUpperCase()} variant={user.role === 'admin' ? 'primary' : 'neutral'} />
+              </div>
+              
+              <div style={{ padding: '24px', borderTop: '1px solid #f1f5f9' }}>
+                 <h4 style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 800, marginBottom: '16px' }}>Network Coordinates</h4>
+                 <div style={{ display: 'grid', gap: '16px' }}>
+                    <div style={{ fontSize: '13px', color: '#475569' }}>
+                       <div style={{ color: '#94a3b8', marginBottom: '4px', fontSize: '11px' }}>PHONE</div>
+                       <div style={{ fontWeight: 600 }}>{contactPhone}</div>
                     </div>
-
-                    {/* Media Evidence Workspace */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '32px', marginBottom: '48px' }}>
-                       
-                       {/* Column 1: Certificate */}
-                       <div>
-                          <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.025em' }}>Government License</h4>
-                          <div 
-                             onClick={() => linkedSeller.sellerCertificateUrl && setActiveMedia(linkedSeller.sellerCertificateUrl)}
-                             style={{ width: '100%', height: '240px', background: '#f1f5f9', borderRadius: '16px', border: '2px dashed #cbd5e1', overflow: 'hidden', cursor: 'pointer', position: 'relative', transition: 'all 0.2s ease' }}
-                          >
-                             {linkedSeller.sellerCertificateUrl ? (
-                                <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                                   {isPdf(linkedSeller.sellerCertificateUrl) ? (
-                                      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#fff1f2', color: '#e11d48' }}>
-                                         <FiFileText size={48} />
-                                         <span style={{ fontSize: '12px', fontWeight: 700, marginTop: '8px' }}>VIEW PDF DOCUMENT</span>
-                                      </div>
-                                   ) : (
-                                      <img src={linkedSeller.sellerCertificateUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                   )}
-                                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: '0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0'}>
-                                      <FiEye color="#fff" size={32} />
-                                   </div>
-                                </div>
-                             ) : (
-                                <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '14px', fontWeight: 600 }}>Missing Documentation</div>
-                             )}
-                          </div>
-                       </div>
-
-                       {/* Column 2: Gallery */}
-                       <div>
-                          <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.025em' }}>Physical Verification Gallery</h4>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                             {linkedSeller.shopPhotoUrls?.map((url, i) => (
-                                <div 
-                                   key={i} 
-                                   onClick={() => setActiveMedia(url)}
-                                   style={{ width: '100%', aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', position: 'relative', border: '1px solid #e2e8f0', background: '#f8fafc' }}
-                                >
-                                   <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: '0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0'}>
-                                      <FiEye color="#fff" size={24} />
-                                   </div>
-                                </div>
-                             ))}
-                             {(!linkedSeller.shopPhotoUrls || linkedSeller.shopPhotoUrls.length === 0) && (
-                                <div style={{ gridColumn: 'span 4', padding: '40px', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1', textAlign: 'center', color: '#94a3b8', fontSize: '14px' }}>No physical media attached</div>
-                             )}
-                          </div>
-                       </div>
+                    <div style={{ fontSize: '13px', color: '#475569' }}>
+                       <div style={{ color: '#94a3b8', marginBottom: '4px', fontSize: '11px' }}>GENDER</div>
+                       <div style={{ fontWeight: 600 }}>{buyerData?.gender || (sellerData?.dateOfBirth ? 'Shared' : 'Omitted')}</div>
                     </div>
-
-                    {/* Action Suite */}
-                    <div style={{ display: 'flex', gap: '16px', paddingTop: '32px', borderTop: '1px solid #f1f5f9' }}>
-                       <button 
-                          onClick={() => handleApproval(true)}
-                          disabled={linkedSeller.status === 'verified'}
-                          style={{ flex: 1, padding: '16px', background: linkedSeller.status === 'verified' ? '#f1f5f9' : '#10b981', color: linkedSeller.status === 'verified' ? '#94a3b8' : '#fff', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: linkedSeller.status === 'verified' ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
-                       >
-                          <FiCheckCircle size={20} /> AUTHORIZE MERCHANT
-                       </button>
-                       <button 
-                          onClick={() => handleApproval(false)}
-                          disabled={linkedSeller.status === 'rejected'}
-                          style={{ flex: 1, padding: '16px', background: linkedSeller.status === 'rejected' ? '#f1f5f9' : '#ef4444', color: linkedSeller.status === 'rejected' ? '#94a3b8' : '#fff', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: linkedSeller.status === 'rejected' ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
-                       >
-                          <FiXCircle size={20} /> REJECT CREDENTIALS
-                       </button>
+                    <div style={{ fontSize: '13px', color: '#475569' }}>
+                       <div style={{ color: '#94a3b8', marginBottom: '4px', fontSize: '11px' }}>REGISTRATION</div>
+                       <div style={{ fontWeight: 600 }}>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Historical'}</div>
                     </div>
                  </div>
               </div>
+           </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <main>
+           {/* Section 1: Role-Specific Data */}
+           {user.role === 'seller' && sellerData ? (
+              <section style={{ background: '#fff', borderRadius: '32px', border: '1px solid #e2e8f0', padding: '40px', marginBottom: '32px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                    <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                       <div style={{ width: '4px', height: '24px', background: '#2563eb', borderRadius: '2px' }} />
+                       Store Performance Analytics
+                    </h3>
+                    <Badge label="Merchant Registry" variant="success" />
+                 </div>
+
+                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+                    {[
+                       { label: 'Total Sales', value: sellerData.analytics?.totalSales || sellerOrders.length, color: '#1e293b' },
+                       { label: 'Total Revenue', value: `₹${(sellerData.analytics?.revenue || totalRevenue).toLocaleString()}`, color: '#2563eb' },
+                       { label: 'Store Views', value: sellerData.analytics?.storeViews || 0, color: '#64748b' },
+                       { label: 'Conversion', value: `${sellerData.analytics?.conversion || 0}%`, color: '#10b981' },
+                       { label: 'Store Rating', value: `${sellerData.analytics?.storeRating || 0}/5`, color: '#f59e0b' }
+                    ].map((stat, i) => (
+                       <div key={i} style={{ padding: '24px', background: '#f8fafc', borderRadius: '24px', border: '1px solid #f1f5f9' }}>
+                          <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px', letterSpacing: '0.05em' }}>{stat.label}</div>
+                          <div style={{ fontSize: '24px', fontWeight: 800, color: stat.color }}>{stat.value}</div>
+                       </div>
+                    ))}
+                 </div>
+
+                 <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '32px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', marginBottom: '20px', textTransform: 'uppercase' }}>Store Details</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '32px' }}>
+                       <div><div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Shop Identity</div><div style={{ fontWeight: 700, color: '#0f172a' }}>{sellerData.shopName}</div></div>
+                       <div><div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Merchant Location</div><div style={{ fontWeight: 700, color: '#0f172a' }}>{sellerData.sellerLocation}</div></div>
+                       <div><div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Inventory Count</div><div style={{ fontWeight: 700, color: '#0f172a' }}>{sellerProducts.length} Live Items</div></div>
+                       <div><div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Verification State</div><Badge label={sellerData.status || 'Pending'} variant={sellerData.status === 'verified' ? 'success' : 'warning'} /></div>
+                    </div>
+                 </div>
+              </section>
+           ) : (
+              <section style={{ background: '#fff', borderRadius: '32px', border: '1px solid #e2e8f0', padding: '40px', marginBottom: '32px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                    <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                       <div style={{ width: '4px', height: '24px', background: '#f59e0b', borderRadius: '2px' }} />
+                       Purchase History & Activity
+                    </h3>
+                    <Badge label="Customer Profile" variant="neutral" />
+                 </div>
+
+                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                    <div style={{ padding: '24px', background: '#f8fafc', borderRadius: '24px', border: '1px solid #f1f5f9', textAlign: 'center' }}>
+                       <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px' }}>Total Volume</div>
+                       <div style={{ fontSize: '32px', fontWeight: 800, color: '#1e293b' }}>{userOrders.length}</div>
+                       <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, marginTop: '4px' }}>Consolidated Orders</div>
+                    </div>
+                    <div style={{ padding: '24px', background: '#f8fafc', borderRadius: '24px', border: '1px solid #f1f5f9', textAlign: 'center' }}>
+                       <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px' }}>Lifetime Value</div>
+                       <div style={{ fontSize: '32px', fontWeight: 800, color: '#2563eb' }}>₹{userOrders.reduce((sum: number, o: Order) => sum + (o.amount || 0), 0).toLocaleString()}</div>
+                       <div style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, marginTop: '4px' }}>Economic Contribution</div>
+                    </div>
+                 </div>
+              </section>
            )}
-        </div>
+
+           {/* Section: Professional Activity Ledger (Buyer vs Seller Lists) */}
+           {user.role === 'buyer' ? (
+              <section style={{ background: '#fff', borderRadius: '32px', border: '1px solid #e2e8f0', padding: '40px', marginBottom: '32px' }}>
+                 <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1e293b', marginBottom: '24px' }}>Fulfillment Ledger & Logistics</h3>
+                 {userOrders.length > 0 ? (
+                    <div style={{ display: 'grid', gap: '16px' }}>
+                       {userOrders.map((order, i) => {
+                          const product = products.find(p => p.productId === order.productId);
+                          return (
+                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '16px', background: '#f8fafc', borderRadius: '24px', border: '1px solid #f1f5f9' }}>
+                                <img src={product?.productMedia[0] || 'https://via.placeholder.com/60'} alt="" style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover' }} />
+                                <div style={{ flex: 1 }}>
+                                   <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '14px' }}>{product?.productType || 'Asset'} {product?.productSubCategory}</div>
+                                   <div style={{ fontSize: '12px', color: '#64748b' }}>Order ID: {order.orderId.substring(0, 8)} • {new Date(order.orderDate).toLocaleDateString()}</div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                   <div style={{ fontWeight: 800, color: '#2563eb' }}>₹{order.amount.toLocaleString()}</div>
+                                   <Badge label={order.status.toUpperCase()} variant="neutral" />
+                                </div>
+                             </div>
+                          );
+                       })}
+                    </div>
+                 ) : (
+                    <div style={{ padding: '60px', background: '#f8fafc', borderRadius: '24px', border: '1px dashed #cbd5e1', textAlign: 'center', color: '#94a3b8' }}>Transaction archive empty.</div>
+                 )}
+              </section>
+           ) : (
+              <section style={{ background: '#fff', borderRadius: '32px', border: '1px solid #e2e8f0', padding: '40px', marginBottom: '32px' }}>
+                 <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1e293b', marginBottom: '24px' }}>Merchant Inventory Catalog</h3>
+                 {sellerProducts.length > 0 ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
+                       {sellerProducts.map((p, i) => (
+                          <div key={i} style={{ background: '#f8fafc', borderRadius: '24px', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
+                             <img src={p.productMedia[0]} alt="" style={{ width: '100%', aspectRatio: '1.2', objectFit: 'cover' }} />
+                             <div style={{ padding: '16px' }}>
+                                <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '13px', marginBottom: '4px' }}>{p.productType} {p.productSubCategory}</div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                   <span style={{ fontWeight: 800, color: '#2563eb', fontSize: '15px' }}>₹{p.productPrice.toLocaleString()}</span>
+                                   <Badge label={p.status.toUpperCase()} variant={p.status === 'APPROVED' ? 'success' : 'neutral'} />
+                                </div>
+                             </div>
+                          </div>
+                       ))}
+                    </div>
+                 ) : (
+                    <div style={{ padding: '60px', background: '#f8fafc', borderRadius: '24px', border: '1px dashed #cbd5e1', textAlign: 'center', color: '#94a3b8' }}>Inventory registry empty.</div>
+                 )}
+              </section>
+           )}
+
+           {/* Section 3: Merchant Documentation (Seller Only) */}
+           {user.role === 'seller' && sellerData && (
+              <section style={{ background: '#fff', borderRadius: '32px', border: '1px solid #e2e8f0', padding: '40px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>KYC & Compliance Documentation</h3>
+                    <Badge label={sellerData.status?.toUpperCase() || 'DOCUMENTATION PENDING'} variant={sellerData.status === 'verified' ? 'success' : 'warning'} />
+                 </div>
+                 
+                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
+                    <div>
+                       <h4 style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: '12px' }}>Primary License</h4>
+                       <div onClick={() => sellerData.sellerCertificateUrl && setActiveMedia(sellerData.sellerCertificateUrl)} style={{ width: '100%', height: '300px', background: '#f1f5f9', borderRadius: '24px', border: '2px dashed #cbd5e1', overflow: 'hidden', cursor: 'pointer' }}>
+                          {sellerData.sellerCertificateUrl ? <img src={sellerData.sellerCertificateUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>Missing</div>}
+                       </div>
+                    </div>
+                    <div>
+                       <h4 style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: '12px' }}>Operational Storefront Gallery</h4>
+                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                          {(sellerData.shopPhotoUrls || []).map((url, i) => (
+                             <div key={i} onClick={() => setActiveMedia(url)} style={{ width: '100%', aspectRatio: '1', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', border: '1px solid #e2e8f0' }}>
+                                <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+
+                 <div style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '16px' }}>
+                    <button onClick={() => handleApproval(true)} disabled={sellerData.status === 'verified'} style={{ flex: 1, padding: '18px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '16px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)' }}>VERIFY STOREFRONT</button>
+                    <button onClick={() => handleApproval(false)} disabled={sellerData.status === 'rejected'} style={{ flex: 1, padding: '18px', background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>REJECT APPLICATION</button>
+                 </div>
+              </section>
+           )}
+        </main>
       </div>
 
-      {/* Lightbox Implementation */}
       {activeMedia && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(12px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeIn 0.2s ease' }} onClick={() => setActiveMedia(null)}>
-           <button style={{ position: 'absolute', top: '32px', right: '32px', background: 'rgba(255,255,255,0.1)', border: 'none', width: '48px', height: '48px', borderRadius: '50%', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiX size={24}/></button>
-           <div style={{ maxWidth: '90%', maxHeight: '90%', background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
-              {isPdf(activeMedia) ? (
-                 <object data={activeMedia} type="application/pdf" style={{ width: '80vw', height: '80vh' }}>
-                    <embed src={activeMedia} type="application/pdf" />
-                 </object>
-              ) : (
-                 <img src={activeMedia} alt="" style={{ maxWidth: '100%', maxHeight: '85vh', display: 'block' }} />
-              )}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(12px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setActiveMedia(null)}>
+           <button style={{ position: 'absolute', top: '32px', right: '32px', background: 'rgba(255,255,255,0.1)', border: 'none', width: '56px', height: '56px', borderRadius: '50%', color: '#fff' }}><FiX size={28}/></button>
+           <div style={{ maxWidth: '90%', maxHeight: '90%', background: '#fff', borderRadius: '24px', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+              <img src={activeMedia} alt="" style={{ maxWidth: '100%', maxHeight: '85vh', display: 'block' }} />
            </div>
         </div>
       )}
-      <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
     </div>
   );
 };

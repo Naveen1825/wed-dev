@@ -82,6 +82,50 @@
   color: white;
   padding: var(--spacing-3);
   width: 100%;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submitBtn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* Role-Specific Themes */
+.userPage {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+.merchantPage {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+.adminPage {
+  background: #0f172a;
+}
+
+.userCard {
+  border-top: 5px solid #3b82f6;
+}
+.merchantCard {
+  background: #ffffff;
+  border-top: 5px solid #0f172a;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+.adminCard {
+  background: #1e293b;
+  border: 1px solid #334155;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+.adminCard .title {
+  color: #f8fafc;
+}
+.adminCard .subtitle {
+  color: #94a3b8;
+}
+.adminCard label {
+  color: #cbd5e1;
 }
 
 .toggle {

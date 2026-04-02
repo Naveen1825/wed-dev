@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  FiUsers, FiPackage, FiActivity, FiShoppingCart 
+  FiPercent, FiPackage, FiActivity, FiShoppingCart 
 } from 'react-icons/fi';
 import type { Product, Seller, User, Buyer, Order } from '@/types';
 import { StatCard } from '@/components/ui/StatCard';
@@ -37,28 +37,28 @@ export const AdminOverview: React.FC<OverviewProps> = ({ products, sellers, user
         <StatCard 
           label="Total Revenue" 
           value={`₹${analytics.totalRevenue.toLocaleString()}`} 
-          icon={<FiActivity />} 
+          icon={<FiActivity size={20} />} 
           color="#2563eb"
           variant="primary"
         />
         <StatCard 
-          label="Total Orders" 
-          value={analytics.totalOrders} 
-          icon={<FiShoppingCart />} 
+          label="Aquired Commision" 
+          value={`₹${(analytics.totalRevenue * 0.15).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`} 
+          icon={<FiPercent size={20} />} 
           color="#7c3aed"
           variant="neutral"
         />
         <StatCard 
-          label="Active Users" 
-          value={users.length} 
-          icon={<FiUsers />} 
+          label="Total Orders" 
+          value={analytics.totalOrders} 
+          icon={<FiShoppingCart size={20} />} 
           color="#10b981"
           variant="success"
         />
         <StatCard 
           label="Live Listings" 
           value={products.length} 
-          icon={<FiPackage />} 
+          icon={<FiPackage size={20} />} 
           color="#ea580c"
           variant="warning"
         />

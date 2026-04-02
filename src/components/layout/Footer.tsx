@@ -6,7 +6,6 @@ const Footer = () => {
       <div className="footer-top">
         <div className="footer-column brand-col">
           <div className="footer-logo">
-            <span className="logo-paw">🐾</span>
             <span className="logo-text">AniSell</span>
           </div>
           <p className="footer-desc">

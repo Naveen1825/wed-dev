@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { Loading } from '@/components/common/Loading';
 import { ProtectedRoute } from '@/routes/ProtectedRoute';
 import { ROUTES } from '@/constants/routes';
+import { isAdminSubdomain, getAdminSubdomainUrl } from '@/utils/subdomain';
 
 // --- Specialized Route Configs ---
 import { adminRoutes } from './admin.routes';
@@ -18,14 +19,15 @@ const SellerOnboarding = lazy(() => import('@/features/seller/SellerOnboarding')
 const BuyerOnboarding = lazy(() => import('@/features/user/BuyerOnboarding'));
 const UserLayout = lazy(() => import('@/layouts/UserLayout'));
 const Checkout = lazy(() => import('@/features/user/Checkout'));
+const Login = lazy(() => import('@/features/public/Login'));
 
 /**
  * Platform routing engine.
  * Orchestrates Role-Based Access Control (RBAC) and performance-optimized code splitting 
  * across distinct Admin, Seller, and Customer portals through specialized route modules.
  */
-const router = createBrowserRouter([
-  // 1. --- Public Marketplace Portal ---
+// --- 1. CORE MARKETPLACE ROUTER ---
+const mainRouter = createBrowserRouter([
   {
     path: '/',
     element: (
@@ -35,21 +37,6 @@ const router = createBrowserRouter([
     ),
     children: publicRoutes,
   },
-  
-  // 2. --- Admin Experience (Strict Access) ---
-  {
-    path: '/admin',
-    element: (
-      <ProtectedRoute allowedRoles={['admin']}>
-        <Suspense fallback={<Loading />}>
-          <AdminLayout />
-        </Suspense>
-      </ProtectedRoute>
-    ),
-    children: adminRoutes,
-  },
-
-  // 3. --- Seller Experience (Merchant Dashboard) ---
   {
     path: '/seller-profile',
     element: (
@@ -116,14 +103,59 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-
-  // --- Fallback System ---
+  {
+    path: '/admin',
+    element: <Navigate to={getAdminSubdomainUrl()} replace />,
+  },
   {
     path: '*',
     element: <Navigate to="/" replace />,
   },
 ]);
 
+// --- 2. DEDICATED ADMIN SUBDOMAIN ROUTER ---
+const adminRouter = createBrowserRouter([
+  {
+    path: '/login',
+    element: (
+      <Suspense fallback={<Loading fullScreen={true} />}>
+        <RootLayout />
+      </Suspense>
+    ),
+    children: [{ index: true, element: <Login /> }]
+  },
+  {
+    path: '/',
+    element: (
+      <ProtectedRoute allowedRoles={['admin']}>
+        <Suspense fallback={<Loading />}>
+          <AdminLayout />
+        </Suspense>
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <Navigate to="/profile" replace /> },
+      ...adminRoutes
+    ]
+  },
+  {
+    path: '/profile', // Root profile for admin on subdomain
+    element: (
+      <ProtectedRoute allowedRoles={['admin']}>
+        <Suspense fallback={<Loading />}>
+          <AdminLayout />
+        </Suspense>
+      </ProtectedRoute>
+    ),
+    children: adminRoutes
+  },
+  {
+    path: '*',
+    element: <Navigate to="/" replace />,
+  }
+]);
+
 export const AppRouter: React.FC = () => {
-  return <RouterProvider router={router} />;
+  const isAdm = isAdminSubdomain();
+  return <RouterProvider router={isAdm ? adminRouter : mainRouter} />;
 };

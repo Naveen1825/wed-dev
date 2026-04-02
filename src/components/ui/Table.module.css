@@ -39,6 +39,15 @@
   background-color: var(--color-background);
 }
 
+.table tr.clickableRow {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.table tr.clickableRow:hover {
+  background: #f8fafc;
+}
+
 .status {
   text-align: center;
   padding: var(--spacing-8);
