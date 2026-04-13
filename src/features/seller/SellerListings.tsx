@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { StatCard } from '@/components/ui/StatCard';
+import { FiPlus, FiEdit2, FiTrash2, FiPackage, FiCheck, FiAlertCircle } from 'react-icons/fi';
 import type { Product } from '@/types';
 import styles from './SellerListings.module.css';
+import homeStyles from './SellerHome.module.css';
 
 interface SellerListingsProps {
   products: Product[];
@@ -16,7 +18,7 @@ interface SellerListingsProps {
  * Merchant Listing Management Feature.
  * Orchestrates the seller's active stock, leveraging the shared ProductCard (compact)
  * and Badge UI components to visualize standardized platform statuses.
- * Extracted from SellerProfile.tsx to isolate merchant-specific features.
+ * Aligned with the premium SellerHome dashboard layout.
  */
 export const SellerListings: React.FC<SellerListingsProps> = ({ 
   products, 
@@ -25,6 +27,15 @@ export const SellerListings: React.FC<SellerListingsProps> = ({
   onEdit, 
   onDelete 
 }) => {
+  const stats = useMemo(() => {
+    return {
+      total: products.length,
+      approved: products.filter(p => p.status === 'APPROVED').length,
+      pending: products.filter(p => p.status === 'PENDING').length,
+      rejected: products.filter(p => p.status === 'REJECTED').length,
+    };
+  }, [products]);
+
   return (
     <div className={styles.container}>
       {/* 1. Portal Meta - Actions & Summary */}
@@ -40,13 +51,38 @@ export const SellerListings: React.FC<SellerListingsProps> = ({
         )}
       </header>
 
+      {/* 2. Merchant KPI Metrics */}
+      <div className={homeStyles.kpiGrid} style={{ marginBottom: '32px' }}>
+        <StatCard 
+          label="Total Items" 
+          value={stats.total} 
+          icon={<FiPackage />} 
+          color="#2563eb"
+          variant="primary"
+        />
+        <StatCard 
+          label="Live Catalog" 
+          value={stats.approved} 
+          icon={<FiCheck />} 
+          color="#10b981"
+          variant="success"
+        />
+        <StatCard 
+          label="Verification" 
+          value={stats.pending} 
+          icon={<FiAlertCircle />} 
+          color="#f59e0b"
+          variant="warning"
+        />
+      </div>
+
       {!isVerified && (
          <div style={{ background: '#fef2f2', border: '1px solid #f87171', padding: '16px', borderRadius: '8px', marginBottom: '24px', color: '#991b1b', fontSize: '14px' }}>
             <strong>Store Verification Pending:</strong> Your merchant account is under review. You will be able to add inventory to the marketplace once an administrator approves your KYC details.
          </div>
       )}
 
-      {/* 2. Operational Hub - Inventory Visualization */}
+      {/* 3. Operational Hub - Inventory Visualization */}
       {products.length > 0 ? (
         <div className={styles.grid}>
           {products.map(product => (

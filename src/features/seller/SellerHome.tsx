@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { FiTrendingUp, FiShoppingBag, FiStar, FiBarChart2, FiClock } from 'react-icons/fi';
 import type { Seller, Product, Order } from '@/types';
 import { StatCard } from '@/components/ui/StatCard';
-import { Badge } from '@/components/ui/Badge';
 import styles from './SellerHome.module.css';
 
 interface SellerHomeProps {
@@ -139,8 +138,8 @@ export const SellerHome: React.FC<SellerHomeProps> = ({ seller, products, seller
                    fill="none" 
                    stroke="#3b82f6" 
                    strokeWidth="4" 
-                   strokeLinecap="round"
-                   strokeLinejoin="round"
+                   strokeLinecap="round" 
+                   strokeLinejoin="round" 
                    points={polylinePoints} 
                  />
                  
@@ -162,46 +161,14 @@ export const SellerHome: React.FC<SellerHomeProps> = ({ seller, products, seller
         );
       })()}
 
-      {/* 3. Recent Orders Section */}
-      <div className={styles.topProductsCard}>
-        <h3 className={styles.chartTitle}>Recent Orders</h3>
-        <div className={styles.productList}>
-          {sellerOrders.length > 0 ? sellerOrders.slice(0, 5).map(({ order, buyerName, productName }) => {
-            const product = products.find(p => p.productId === order.productId);
-            const variant = order.status === 'DELIVERED' ? 'success' : order.status === 'CANCELLED' ? 'error' : order.status === 'SHIPPED' ? 'primary' : 'warning';
-            return (
-              <div key={order.orderId} className={styles.productItem}>
-                {product?.productMedia?.[0] && (
-                  <img src={product.productMedia[0]} alt="" className={styles.productImage} />
-                )}
-                <div className={styles.productInfo}>
-                  <div className={styles.productName}>{productName}</div>
-                  <div className={styles.productMeta}>
-                     Buyer: {buyerName} • Qty: {order.quantity || 1} • {new Date(order.orderDate).toLocaleDateString()}
-                  </div>
-                </div>
-                <div className={styles.productStats}>
-                   <Badge label={order.status} variant={variant} size="sm" />
-                   <div className={styles.salesValue} style={{ marginTop: '4px' }}>₹{order.amount.toLocaleString()}</div>
-                </div>
-              </div>
-            );
-          }) : (
-            <p className={styles.productMeta} style={{ textAlign: 'center', padding: '24px' }}>
-              No orders received yet. Orders placed on your products will appear here.
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* 4. Top Performing Listings */}
+      {/* 3. Top Performing Listings */}
       {topProducts.length > 0 && (
         <div className={styles.topProductsCard} style={{ marginTop: '24px' }}>
           <h3 className={styles.chartTitle}>Top Performing Listings</h3>
           <div className={styles.productList}>
             {topProducts.map(p => (
               <div key={p.productId} className={styles.productItem}>
-                <img src={p.productMedia[0]} alt="" className={styles.productImage} />
+                {p.productMedia?.[0] && <img src={p.productMedia[0]} alt="" className={styles.productImage} />}
                 <div className={styles.productInfo}>
                   <div className={styles.productName}>{p.productSubCategory}</div>
                   <div className={styles.productMeta}>{p.productType} • {p.productReviews?.length || 0} Reviews</div>

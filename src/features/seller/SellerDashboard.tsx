@@ -4,8 +4,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useSearchData } from '@/hooks/useSearchData';
 import { SellerHome } from '@/features/seller/SellerHome';
 import { SellerListings } from '@/features/seller/SellerListings';
+import { SellerOrders } from '@/features/seller/SellerOrders';
 import { SkeletonAnalytics, SkeletonTableRow } from '@/components/ui/Skeleton';
-import { ROUTES } from '@/constants/routes';
 import { ProductForm } from '@/features/seller/ProductForm';
 import { FiX, FiMenu } from 'react-icons/fi';
 import { doc, deleteDoc, updateDoc, arrayRemove } from 'firebase/firestore';
@@ -27,10 +27,13 @@ const SellerProfile: React.FC = () => {
   const { sellers, products, buyers, users, loading: globalLoading } = useSearchData();
   const [isAddingProduct, setIsAddingProduct] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState('');
-  const [isTransitioning, setIsTransitioning] = React.useState(false);
   
   // Use routing to determine active tab for true sidebar sync
-  const activeTab = location.pathname.includes('/products') ? 'listings' : 'overview';
+  const activeTab = useMemo(() => {
+    if (location.pathname.includes('/products')) return 'listings';
+    if (location.pathname.includes('/orders')) return 'orders';
+    return 'overview';
+  }, [location.pathname]);
 
   // Auto-clear success messages for a cleaner workspace
   React.useEffect(() => {
@@ -39,13 +42,6 @@ const SellerProfile: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
-
-  // Handle tab transitions with a premium loading experience
-  const handleTabChange = (path: string) => {
-    setIsTransitioning(true);
-    navigate(path);
-    setTimeout(() => setIsTransitioning(false), 400); // Simulate smooth transition
-  };
 
   // Resolve the active merchant document from Firestore synchronization
   const seller: Seller | null = useMemo(() => {
@@ -88,7 +84,7 @@ const SellerProfile: React.FC = () => {
     }).sort((a, b) => new Date(b.order.orderDate).getTime() - new Date(a.order.orderDate).getTime());
   }, [buyers, users, user, sellerProducts, products]);
 
-  if (globalLoading || isTransitioning) return (
+  if (globalLoading) return (
      <div className={styles.container}>
         <header className={styles.header}>
            <div style={{ width: '40%', height: '32px', background: '#f1f5f9', borderRadius: '8px', marginBottom: '12px' }} />
@@ -106,37 +102,33 @@ const SellerProfile: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerInfo}>
-           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-             <h1>Store Administration</h1>
-             <button 
-               className={styles.mobileMenuTrigger} 
-               onClick={toggleMenu}
-               style={{ display: 'none', background: 'none', border: 'none', padding: '0', cursor: 'pointer' }}
-             >
-               <FiMenu size={24} color="#1e293b" />
-             </button>
-           </div>
-           <p>Operation oversight and performance tracking for {seller.shopName}.</p>
-        </div>
-        
-        {/* Portal Feature Toggles */}
-        <div className={styles.toggles}>
+      {activeTab === 'overview' ? (
+        <header className={styles.header}>
+          <div className={styles.headerInfo}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+               <h1>Store Administration</h1>
+               <button 
+                 className={styles.mobileMenuTrigger} 
+                 onClick={toggleMenu}
+                 style={{ background: 'none', border: 'none', padding: '0', cursor: 'pointer' }}
+               >
+                 <FiMenu size={24} color="#1e293b" />
+               </button>
+             </div>
+             <p>Operation oversight and performance tracking for {seller.shopName}.</p>
+          </div>
+        </header>
+      ) : (
+        <div className={styles.compactHeader}>
            <button 
-             onClick={() => handleTabChange(ROUTES.SELLER_DASHBOARD)}
-             className={`${styles.toggleBtn} ${activeTab === 'overview' ? styles.toggleBtnActive : styles.toggleBtnInactive}`}
+             className={styles.mobileMenuTrigger} 
+             onClick={toggleMenu}
+             style={{ background: 'none', border: 'none', padding: '0', cursor: 'pointer' }}
            >
-             Performance Overview
-           </button>
-           <button 
-             onClick={() => handleTabChange(ROUTES.SELLER_DASHBOARD + '/products')}
-             className={`${styles.toggleBtn} ${activeTab === 'listings' ? styles.toggleBtnActive : styles.toggleBtnInactive}`}
-           >
-             Inventory Tracking
+             <FiMenu size={24} color="#1e293b" />
            </button>
         </div>
-      </header>
+      )}
 
       {successMessage && (
         <div style={{ background: '#ecfdf5', color: '#065f46', padding: '12px 20px', borderRadius: '12px', marginBottom: '24px', fontWeight: 600, border: '1px solid #10b981', display: 'flex', justifyContent: 'space-between', animation: 'fadeIn 0.3s ease' }}>
@@ -146,35 +138,38 @@ const SellerProfile: React.FC = () => {
       )}
 
       {/* Portal Operational Views */}
-      {activeTab === 'overview' ? (
-        <SellerHome 
-          seller={seller}
-          products={sellerProducts}
-          sellerOrders={sellerOrders}
-        />
-      ) : (
-        <SellerListings 
-          products={sellerProducts}
-          isVerified={isSellerVerified}
-          onAdd={() => setIsAddingProduct(true)}
-          onEdit={(productId) => {
-            navigate(`/product/${productId}`);
-          }}
-          onDelete={async (productId) => {
-            if (!window.confirm('Are you sure you want to remove this listing from the marketplace?')) return;
-            try {
-              await deleteDoc(doc(db, 'products', productId));
-              await updateDoc(doc(db, 'sellers', seller.sellerId), {
-                productIds: arrayRemove(productId)
-              });
-              setSuccessMessage('Listing removed from the marketplace successfully.');
-            } catch (err: any) {
-              console.error('Failed to delete product:', err);
-              alert('Failed to remove listing. Please try again.');
-            }
-          }}
-        />
-      )}
+      {(() => {
+        switch (activeTab) {
+          case 'overview':
+            return <SellerHome seller={seller} products={sellerProducts} sellerOrders={sellerOrders} />;
+          case 'orders':
+            return <SellerOrders products={products} sellerOrders={sellerOrders} />;
+          case 'listings':
+            return (
+              <SellerListings 
+                products={sellerProducts}
+                isVerified={isSellerVerified}
+                onAdd={() => setIsAddingProduct(true)}
+                onEdit={(productId) => navigate(`/product/${productId}`)}
+                onDelete={async (productId) => {
+                  if (!window.confirm('Are you sure you want to remove this listing from the marketplace?')) return;
+                  try {
+                    await deleteDoc(doc(db, 'products', productId));
+                    await updateDoc(doc(db, 'sellers', seller.sellerId), {
+                      productIds: arrayRemove(productId)
+                    });
+                    setSuccessMessage('Listing removed successfully.');
+                  } catch (err) {
+                    console.error('Delete failed:', err);
+                    alert('Failed to remove listing.');
+                  }
+                }}
+              />
+            );
+          default:
+            return null;
+        }
+      })()}
 
       {isAddingProduct && (
         <ProductForm 

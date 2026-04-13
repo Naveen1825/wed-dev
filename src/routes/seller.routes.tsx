@@ -16,7 +16,11 @@ export const sellerRoutes: RouteObject[] = [
   },
   {
     path: 'products',
-    element: <SellerDashboard />, // Products still managed via activeTab mapping in SellerDashboard
+    element: <SellerDashboard />,
+  },
+  {
+    path: 'orders',
+    element: <SellerDashboard />,
   },
   {
     path: 'reviews',

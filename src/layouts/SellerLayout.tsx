@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { 
   FiUser, FiPackage, FiStar, 
-  FiSettings, FiLogOut, FiBarChart2 
+  FiSettings, FiLogOut, FiBarChart2, FiShoppingBag 
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import { ROUTES } from '@/constants/routes';
@@ -22,7 +22,8 @@ const SellerLayout: React.FC = () => {
 
   const menuItems = [
     { id: 'dashboard',    icon: <FiBarChart2 />, label: 'Store Analytics', path: ROUTES.SELLER_DASHBOARD },
-    { id: 'products',     icon: <FiPackage />,   label: 'My Listings',    path: ROUTES.SELLER_DASHBOARD + '/products' },
+    { id: 'orders',       icon: <FiPackage />,   label: 'Manage Orders',   path: ROUTES.SELLER_DASHBOARD + '/orders' },
+    { id: 'products',     icon: <FiShoppingBag />, label: 'My Listings',    path: ROUTES.SELLER_DASHBOARD + '/products' },
     { id: 'reviews',      icon: <FiStar />,      label: 'Customer Reviews', path: ROUTES.SELLER_DASHBOARD + '/reviews' },
     { id: 'profile',      icon: <FiUser />,      label: 'Store Profile',    path: ROUTES.SELLER_DASHBOARD + '/edit' },
     { id: 'settings',     icon: <FiSettings />,  label: 'Merchant Settings', path: ROUTES.SELLER_DASHBOARD + '/settings' },

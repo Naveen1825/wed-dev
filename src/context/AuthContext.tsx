@@ -3,7 +3,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/services/firebase/config';
 import { AuthService } from '@/services/api/AuthService';
-import { isAdminSubdomain } from '@/utils/subdomain';
+import { isAdminSubdomain, isAdminEmail } from '@/utils/subdomain';
 import type { User, Seller, Buyer } from '@/types';
 
 interface AuthContextType {
@@ -57,14 +57,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       try {
         if (firebaseUser) {
-          // STRICT DOMAIN ISOLATION CHECK
-          // We check our locally stored session marker to ensure this session was 
-          // intended for the current subdomain.
-          const sessionType = localStorage.getItem('anisell_session_type');
+          const isUserAdmin = isAdminEmail(firebaseUser.email);
           
           if (isAsAdmin) {
-             if (sessionType !== 'admin') {
-                // If on admin subdomain but session is NOT marked as admin, clear it.
+             if (!isUserAdmin) {
+                // If on admin subdomain but user is NOT an admin, clear session.
                 await AuthService.logout();
                 setUser(null);
                 return;
@@ -78,8 +75,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 role: 'admin'
              });
           } else {
-             if (sessionType === 'admin') {
-                // If on main domain but session IS marked as admin, clear it.
+             if (isUserAdmin) {
+                // If on main domain but user IS an admin, clear session.
                 await AuthService.logout();
                 setUser(null);
                 return;
@@ -129,14 +126,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, pass: string) => {
     const userData = await AuthService.loginWithEmail(email, pass);
-    localStorage.setItem('anisell_session_type', 'standard');
     setUser(userData);
     return userData;
   };
 
   const loginAdmin = async (email: string, pass: string) => {
      const userData = await AuthService.loginAdmin(email, pass);
-     localStorage.setItem('anisell_session_type', 'admin');
      setUser(userData);
      return userData;
   };
@@ -180,7 +175,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     await AuthService.logout();
     localStorage.removeItem('anisell_user_details');
-    localStorage.removeItem('anisell_session_type');
     setUser(null);
     setSellerData(null);
     setBuyerData(null);

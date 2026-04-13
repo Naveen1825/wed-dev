@@ -65,6 +65,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onClose, onSuccess, se
     if (!dob) return '';
     const birthDate = new Date(dob);
     const today = new Date();
+    
     let years = today.getFullYear() - birthDate.getFullYear();
     let months = today.getMonth() - birthDate.getMonth();
     
@@ -73,7 +74,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onClose, onSuccess, se
       months += 12;
     }
     
+    if (years === 0 && months === 0) {
+      const diffTime = Math.abs(today.getTime() - birthDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return `${diffDays} Days`;
+    }
+    
     if (years === 0) return `${months} Months`;
+    if (months === 0) return `${years} Years`;
     return `${years} Years ${months} Months`;
   };
 

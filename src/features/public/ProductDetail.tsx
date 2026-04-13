@@ -267,6 +267,22 @@ const ProductDetail: React.FC = () => {
                 <span className="gender-text">{product.productIsPair ? 'Pair' : product.productGender}</span>
               </div>
             </div>
+            
+            {authUser?.role === 'seller' && (
+              <div style={{ 
+                background: '#fef2f2', 
+                border: '1px solid #fee2e2', 
+                borderRadius: '8px', 
+                padding: '10px 14px', 
+                marginBottom: '20px',
+                fontSize: '13px',
+                color: '#991b1b',
+                fontWeight: 500
+              }}>
+                Sellers cannot contact other sellers. Switching to a Buyer account is required for inquiries.
+              </div>
+            )}
+
             <div className="product-page-price">₹{product.productPrice.toLocaleString('en-IN')}</div>
 
             <div className="detail-section">
@@ -291,8 +307,9 @@ const ProductDetail: React.FC = () => {
                 className="btn-contact-seller" 
                 onClick={() => navigate(`/checkout/${product.productId}`)}
                 style={{ width: '100%' }}
+                disabled={authUser?.role === 'seller'}
               >
-                <MdEmail /> Contact Seller
+                <MdEmail /> {authUser?.role === 'seller' ? 'Seller Contact Disabled' : 'Contact Seller'}
               </button>
             </div>
           </div>
