@@ -101,6 +101,12 @@ const AdminUserDossier: React.FC = () => {
                        <div style={{ color: '#94a3b8', marginBottom: '4px', fontSize: '11px' }}>GENDER</div>
                        <div style={{ fontWeight: 600 }}>{buyerData?.gender || (sellerData?.dateOfBirth ? 'Shared' : 'Omitted')}</div>
                     </div>
+                    {buyerData?.dateOfBirth && (
+                       <div style={{ fontSize: '13px', color: '#475569' }}>
+                          <div style={{ color: '#94a3b8', marginBottom: '4px', fontSize: '11px' }}>DATE OF BIRTH</div>
+                          <div style={{ fontWeight: 600 }}>{new Date(buyerData.dateOfBirth).toLocaleDateString()}</div>
+                       </div>
+                    )}
                     <div style={{ fontSize: '13px', color: '#475569' }}>
                        <div style={{ color: '#94a3b8', marginBottom: '4px', fontSize: '11px' }}>REGISTRATION</div>
                        <div style={{ fontWeight: 600 }}>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Historical'}</div>
@@ -158,7 +164,7 @@ const AdminUserDossier: React.FC = () => {
                     <Badge label="Customer Profile" variant="neutral" />
                  </div>
 
-                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
                     <div style={{ padding: '24px', background: '#f8fafc', borderRadius: '24px', border: '1px solid #f1f5f9', textAlign: 'center' }}>
                        <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px' }}>Total Volume</div>
                        <div style={{ fontSize: '32px', fontWeight: 800, color: '#1e293b' }}>{userOrders.length}</div>
@@ -168,6 +174,44 @@ const AdminUserDossier: React.FC = () => {
                        <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px' }}>Lifetime Value</div>
                        <div style={{ fontSize: '32px', fontWeight: 800, color: '#2563eb' }}>₹{userOrders.reduce((sum: number, o: Order) => sum + (o.amount || 0), 0).toLocaleString()}</div>
                        <div style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, marginTop: '4px' }}>Economic Contribution</div>
+                    </div>
+                 </div>
+
+                 <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '32px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', marginBottom: '20px', textTransform: 'uppercase' }}>Onboarding Details</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '32px' }}>
+                       <div>
+                          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Recipient Name</div>
+                          <div style={{ fontWeight: 700, color: '#0f172a' }}>{buyerData?.addresses?.[0]?.name || user.displayName}</div>
+                       </div>
+                       <div>
+                          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Contact Phone</div>
+                          <div style={{ fontWeight: 700, color: '#0f172a' }}>{buyerData?.phone || 'Not Provided'}</div>
+                       </div>
+                       <div>
+                          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Date of Birth</div>
+                          <div style={{ fontWeight: 700, color: '#0f172a' }}>
+                             {buyerData?.dateOfBirth ? new Date(buyerData.dateOfBirth).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not Provided'}
+                          </div>
+                       </div>
+                       <div>
+                          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Gender</div>
+                          <div style={{ fontWeight: 700, color: '#0f172a', textTransform: 'capitalize' }}>{buyerData?.gender || 'Not Provided'}</div>
+                       </div>
+                       <div style={{ gridColumn: '1 / -1' }}>
+                          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Primary Address</div>
+                          <div style={{ fontWeight: 700, color: '#0f172a' }}>
+                             {buyerData?.addresses?.[0] ? (
+                                [
+                                   buyerData.addresses[0].addressLine,
+                                   buyerData.addresses[0].locality,
+                                   buyerData.addresses[0].city,
+                                   buyerData.addresses[0].state,
+                                   buyerData.addresses[0].pincode
+                                ].filter(Boolean).join(', ')
+                             ) : 'No Address Stored'}
+                          </div>
+                       </div>
                     </div>
                  </div>
               </section>

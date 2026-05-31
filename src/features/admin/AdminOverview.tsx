@@ -30,6 +30,26 @@ export const AdminOverview: React.FC<OverviewProps> = ({ products, sellers, user
   const approvedProducts = products.filter(p => p.status === 'APPROVED').length;
   const pendingSellers = sellers.filter(s => s.status === 'pending').length;
 
+  const getUserState = (u: User) => {
+    if (u.role === 'seller') {
+      const seller = sellers.find(s => s.sellerId === u.uid);
+      if (!seller || !seller.sellerLocation) return 'N/A';
+      const parts = seller.sellerLocation.split(',').map(s => s.trim());
+      if (parts.length >= 2) {
+        const last = parts[parts.length - 1];
+        if (/^\d+$/.test(last)) {
+          return parts[parts.length - 2] || 'N/A';
+        }
+        return last;
+      }
+      return seller.sellerLocation;
+    } else if (u.role === 'buyer') {
+      const buyer = buyers.find(b => b.buyerId === u.uid);
+      return buyer?.addresses?.[0]?.state || 'N/A';
+    }
+    return 'N/A';
+  };
+
   return (
     <div className={styles.overview}>
       {/* 1. Global Platform KPI Grid - Real Data */}
@@ -141,6 +161,7 @@ export const AdminOverview: React.FC<OverviewProps> = ({ products, sellers, user
             <tr>
               <th>User Details</th>
               <th>Role</th>
+              <th>State</th>
               <th>Joined</th>
             </tr>
           </thead>
@@ -163,6 +184,11 @@ export const AdminOverview: React.FC<OverviewProps> = ({ products, sellers, user
                     color: u.role === 'admin' ? '#4f46e5' : u.role === 'seller' ? '#d97706' : '#059669'
                   }}>
                     {u.role}
+                  </span>
+                </td>
+                <td>
+                  <span style={{ fontWeight: 600, color: '#475569', fontSize: '13px' }}>
+                    {getUserState(u)}
                   </span>
                 </td>
                 <td style={{ color: '#64748b', fontSize: '13px' }}>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>

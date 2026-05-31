@@ -184,3 +184,86 @@
   padding: 24px 40px 40px 40px;
   flex: 1;
 }
+
+/* Hide toggle on desktop */
+.menuToggle {
+  display: none;
+}
+
+/* -------------------------------------------------------------------------
+   RESPONSIVE DESIGN BREAKPOINTS
+   ------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: -280px;
+    height: 100vh;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+  }
+
+  .sidebarActive {
+    left: 0 !important;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 90;
+  }
+
+  .main {
+    height: auto;
+    overflow-y: visible;
+  }
+
+  .topBar {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .menuToggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    color: #475569;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.2s ease;
+  }
+
+  .menuToggle:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+  }
+
+  .searchBar {
+    width: 220px;
+  }
+
+  .content {
+    padding: 20px;
+  }
+}
+

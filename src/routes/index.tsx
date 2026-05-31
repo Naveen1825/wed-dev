@@ -160,5 +160,18 @@ export const AppRouter: React.FC = () => {
   const onVercel = isVercel();
   const adminRouter = React.useMemo(() => createAdminRouter(onVercel), [onVercel]);
   
+  React.useEffect(() => {
+    if (isAdm) {
+      // Prevent indexation of any admin subdomains (e.g. admin.anisell.in, admin.localhost)
+      let robotsMeta = document.querySelector('meta[name="robots"]');
+      if (!robotsMeta) {
+        robotsMeta = document.createElement('meta');
+        robotsMeta.setAttribute('name', 'robots');
+        document.head.appendChild(robotsMeta);
+      }
+      robotsMeta.setAttribute('content', 'noindex, nofollow, noarchive');
+    }
+  }, [isAdm]);
+  
   return <RouterProvider router={isAdm ? adminRouter : mainRouter} />;
 };

@@ -5,6 +5,7 @@ import { ListingGrid } from '@/features/public/ListingGrid';
 import BreedBrowser from "@/components/home/BreedBrowser"; // Will refactor to features/public next
 import TopSellingPets from "@/components/home/SellerGrid"; // Will refactor to features/public next
 import TrustFeatures from "@/components/home/TrustFeatures";
+import { useSEO } from '@/hooks/useSEO';
 import "@/App.css";
 
 /**
@@ -15,6 +16,13 @@ import "@/App.css";
  */
 const Home: React.FC = () => {
   const { approvedProducts, loading } = useSearchData();
+
+  useSEO({
+    title: "Buy & Sell Verified Pets Online in India",
+    description: "Anisell is India's leading verified pet marketplace. Connect directly with KCI-registered breeders, buy healthy puppies, kittens, birds, and fish securely.",
+    keywords: "buy pets online india, pet marketplace india, sell pets online, verified dog breeders, buy puppies bangalore, cats for sale chennai, pet shop mumbai, anisell",
+    canonical: "https://anisell.in/"
+  });
 
   if (loading) return (
      <div style={{ padding: '40px' }}>

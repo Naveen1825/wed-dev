@@ -12,7 +12,10 @@ import { db } from '@/services/firebase/config';
 import type { Product, User, Review } from '@/types';
 import './ProductDetail.css';
 
+import { useSEO } from '@/hooks/useSEO';
+
 // --- Sub-Components ---
+
 
 /**
  * Review Item Component
@@ -201,13 +204,6 @@ const ProductDetail: React.FC = () => {
     }
   }, [id, products, loading]);
 
-  const related = useMemo(() => {
-    if (!product) return [];
-    return products
-      .filter(p => p.productCategory === product.productCategory && p.productId !== product.productId)
-      .slice(0, 4);
-  }, [product, products]);
-
   const formatLocation = (loc?: string) => {
     if (!loc || loc === 'Global Marketplace') return 'Global';
     const parts = loc.split(',').map(p => p.trim()).filter(p => p.length > 0);
@@ -220,6 +216,41 @@ const ProductDetail: React.FC = () => {
     }
     return (cityIndex >= 0 && stateIndex >= 0) ? `${parts[cityIndex]}, ${parts[stateIndex]}` : loc;
   };
+
+  const seoTitle = useMemo(() => {
+    if (!product) return 'Pet Listing for Sale';
+    const genderStr = product.productIsPair ? 'Pair' : product.productGender;
+    const locationStr = formatLocation(product.sellerLocation);
+    return `${product.productSubCategory} (${genderStr}) for Sale in ${locationStr}`;
+  }, [product]);
+
+  const seoDescription = useMemo(() => {
+    if (!product) return '';
+    const formattedPrice = product.productPrice.toLocaleString('en-IN');
+    const locationStr = formatLocation(product.sellerLocation);
+    const vaccinatedStr = product.productVaccinated ? 'fully vaccinated' : 'not vaccinated';
+    return `Buy verified, healthy ${product.productSubCategory} in ${locationStr} for ₹${formattedPrice}. This pet is ${product.productAge} old, ${product.productGender.toLowerCase()}, and ${vaccinatedStr}. Secure breeder chat on Anisell.`;
+  }, [product]);
+
+  const seoKeywords = useMemo(() => {
+    if (!product) return '';
+    const locationStr = formatLocation(product.sellerLocation);
+    return `buy ${product.productSubCategory.toLowerCase()} online, ${product.productSubCategory.toLowerCase()} puppies for sale, buy ${product.productSubCategory.toLowerCase()} in ${locationStr.toLowerCase()}, verified ${product.productSubCategory.toLowerCase()} breeders, anisell`;
+  }, [product]);
+
+  useSEO({
+    title: seoTitle,
+    description: seoDescription,
+    keywords: seoKeywords,
+    canonical: product ? `https://anisell.in/product/${product.productId}` : undefined
+  });
+
+  const related = useMemo(() => {
+    if (!product) return [];
+    return products
+      .filter(p => p.productCategory === product.productCategory && p.productId !== product.productId)
+      .slice(0, 4);
+  }, [product, products]);
 
   if (loading || !product) {
     return <div className="loading-container"><div className="spinner" /></div>;

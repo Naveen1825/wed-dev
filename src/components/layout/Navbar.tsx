@@ -63,7 +63,7 @@ const Navbar = () => {
       <nav className="nav">
         <Link to="/">
           <img
-            src="https://anisell.in/wp-content/uploads/2025/06/91-93450-29589-1.png"
+            src="/anisell_logo.png"
             alt="AniSell Logo"
             className="logo"
           />

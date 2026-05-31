@@ -81,6 +81,34 @@ const AdminUsers: React.FC = () => {
         />
       )
     },
+    {
+      header: 'State',
+      key: 'state',
+      render: (u: User) => {
+        if (u.role === 'seller') {
+          const seller = sellers.find(s => s.sellerId === u.uid);
+          if (!seller || !seller.sellerLocation) return <span style={{ color: '#94a3b8', fontSize: '13px' }}>N/A</span>;
+          const parts = seller.sellerLocation.split(',').map(s => s.trim());
+          if (parts.length >= 2) {
+            const last = parts[parts.length - 1];
+            if (/^\d+$/.test(last)) {
+              return <span style={{ fontWeight: 600, color: '#475569', fontSize: '13px' }}>{parts[parts.length - 2] || 'N/A'}</span>;
+            }
+            return <span style={{ fontWeight: 600, color: '#475569', fontSize: '13px' }}>{last}</span>;
+          }
+          return <span style={{ fontWeight: 600, color: '#475569', fontSize: '13px' }}>{seller.sellerLocation}</span>;
+        } else if (u.role === 'buyer') {
+          const buyer = buyers.find(b => b.buyerId === u.uid);
+          const state = buyer?.addresses?.[0]?.state;
+          return state ? (
+            <span style={{ fontWeight: 600, color: '#475569', fontSize: '13px' }}>{state}</span>
+          ) : (
+            <span style={{ color: '#94a3b8', fontSize: '13px' }}>N/A</span>
+          );
+        }
+        return <span style={{ color: '#94a3b8', fontSize: '13px' }}>N/A</span>;
+      }
+    },
     { 
       header: 'Joined Date', 
       key: 'joinDate', 
